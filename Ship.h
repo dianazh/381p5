@@ -19,22 +19,18 @@ functions are implemented in this class to throw an Error exception.
 #include "Sim_object.h"
 #include "Track_base.h"
 #include "Geometry.h"
+#include <memory>
 
 class Island;
 
-class Ship : public Sim_object, private Track_base {
+class Ship : public Sim_object, public std::enable_shared_from_this<Ship> {
 public:
-  // initialize, then output constructor message
-  Ship(const std::string& name_, Point position_, double fuel_capacity_, 
-    double maximum_speed_, double fuel_consumption_, int resistance_);
-    
-  // made pure virtual to mark this class as abstract, but defined anyway
-  // to output destructor message
-  virtual ~Ship() = 0;
+  // output destructor message
+  virtual ~Ship();
   
   /*** Readers ***/
   // return the current position
-  Point get_location() const override {return Track_base::get_position();}
+  Point get_location() const override {return track_base.get_position();}
   
   // Return true if ship can move (it is not dead in the water or in the process or sinking); 
   bool can_move() const;
@@ -47,13 +43,10 @@ public:
   
   // Return true if ship is afloat (not in process of sinking), false if not
   bool is_afloat() const;
-    
-  // Return true if ship is on the bottom
-  bool is_on_the_bottom() const;
   
   // Return true if the ship is Stopped and the distance to the supplied island
   // is less than or equal to 0.1 nm
-  bool can_dock(Island* island_ptr) const;
+  bool can_dock(std::shared_ptr<Island> island_ptr) const;
   
   /*** Interface to derived classes ***/
   // Update the state of the Ship
@@ -77,7 +70,7 @@ public:
   virtual void stop();
   // dock at an Island - set our position = Island's position, go into Docked state
      // may throw Error("Can't dock!");
-  virtual void dock(Island * island_ptr);
+  virtual void dock(std::shared_ptr<Island> island_ptr);
   // Refuel - must already be docked at an island; fill takes as much as possible
      // may throw Error("Must be docked!");
   virtual void refuel();
@@ -85,17 +78,17 @@ public:
   /*** Fat interface command functions ***/
   // These functions throw an Error exception for this class
     // will always throw Error("Cannot load at a destination!");
-  virtual void set_load_destination(Island *);
+  virtual void set_load_destination(std::shared_ptr<Island>);
     // will always throw Error("Cannot unload at a destination!");
-  virtual void set_unload_destination(Island *);
+  virtual void set_unload_destination(std::shared_ptr<Island>);
     // will always throw Error("Cannot attack!");
-  virtual void attack(Ship * in_target_ptr);
+  virtual void attack(std::shared_ptr<Ship> in_target_ptr);
     // will always throw Error("Cannot attack!");
   virtual void stop_attack();
 
   // interactions with other objects
   // receive a hit from an attacker
-  virtual void receive_hit(int hit_force, Ship* attacker_ptr);
+  virtual void receive_hit(int hit_force, std::shared_ptr<Ship> attacker_ptr);
     
   // disallow copy/move, construction or assignment
   Ship(const Ship&) = delete;
@@ -106,11 +99,16 @@ public:
 protected:
   // future projects may need additional protected members
 
+  // initialize, then output constructor message
+  Ship(const std::string& name_, Point position_, double fuel_capacity_, 
+    double maximum_speed_, double fuel_consumption_, int resistance_);
+    
   double get_maximum_speed() const;
   // return pointer to the Island currently docked at, or nullptr if not docked
-  Island* get_docked_Island() const;
+  std::shared_ptr<Island> get_docked_Island() const;
 
 private:
+  Track_base track_base;
   double fuel;            // Current amount of fuel
   double fuel_consumption;      // tons/nm required
   Point destination;          // Current destination if any
@@ -119,10 +117,9 @@ private:
   double maximum_speed; //maximum speed of the ship
   int resistance; // current resistance of the ship, if < 0, starts sinking
 
-  enum class State {DOCKED, STOPPED, MOVING_TO_POSITION, MOVING_ON_COURSE, DEAD_IN_THE_WATER, 
-    SINKING, SUNK, ON_THE_BOTTOM};
+  enum class State {DOCKED, STOPPED, MOVING_TO_POSITION, MOVING_ON_COURSE, DEAD_IN_THE_WATER, SUNK};
   State ship_state;  //state of the ship
-  Island* docked_Island; // island that the ship is docked at, nullptr if none
+  std::shared_ptr<Island> docked_Island; // island that the ship is docked at, nullptr if none
 
   // Updates position, fuel, and movement_state, assuming 1 time unit (1 hr)
   void calculate_movement();

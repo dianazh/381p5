@@ -15,6 +15,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::map;
+using std::shared_ptr;
 
 // output constructor message
 Controller::Controller()
@@ -31,15 +32,15 @@ Controller::~Controller()
 // create View object, run the program by acccepting user commands, then destroy View object
 void Controller::run()
 {
-  View* view = new View();
+  shared_ptr<View> view(std::make_shared<View>());
   g_Model_ptr->attach(view);
   // view commands
-  map<string, void(Controller::*)(View*)> view_commands = {
+  map<string, void(Controller::*)(shared_ptr<View>)> view_commands = {
     {"size", &Controller::view_size}, 
     {"zoom", &Controller::view_zoom}, 
     {"pan", &Controller::view_pan}
   };
-  map<string, void(Controller::*)(Ship*)> ship_commands = {
+  map<string, void(Controller::*)(shared_ptr<Ship>)> ship_commands = {
     {"course", &Controller::ship_course}, {"position", &Controller::ship_position}, {"destination", &Controller::ship_destination},
     {"load_at", &Controller::ship_load_at}, {"unload_at", &Controller::ship_unload_at}, {"dock_at", &Controller::ship_dock_at},
     {"attack", &Controller::ship_attack}, {"refuel", &Controller::ship_refuel}, {"stop", &Controller::ship_stop}, 
@@ -54,7 +55,7 @@ void Controller::run()
         quit(view);
         return;
       } else if (g_Model_ptr->is_ship_present(word)) {
-        Ship* ship = g_Model_ptr->get_ship_ptr(word);
+        shared_ptr<Ship> ship = g_Model_ptr->get_ship_ptr(word);
         // expect ship command
         string instr;
         cin >> instr;
@@ -98,10 +99,9 @@ void Controller::run()
 }
 
 // quit from the controller run
-void Controller::quit(View* view)
+void Controller::quit(shared_ptr<View> view)
 {
   g_Model_ptr->detach(view);
-  delete view;
   cout << "Done" << endl;
 }
 
@@ -129,7 +129,7 @@ double Controller::get_speed()
 }
 
 // get input island from user
-Island* Controller::get_island()
+shared_ptr<Island> Controller::get_island()
 {
   string island_name;
   cin >> island_name;
@@ -137,7 +137,7 @@ Island* Controller::get_island()
 }
  
 // handle size command for view
-void Controller::view_size(View* view)
+void Controller::view_size(shared_ptr<View> view)
 {
   int size;
   cin >> size;
@@ -146,7 +146,7 @@ void Controller::view_size(View* view)
 }
 
 // handle zoom command for view
-void Controller::view_zoom(View* view)
+void Controller::view_zoom(shared_ptr<View> view)
 {
   double scale;
   cin >> scale;
@@ -155,7 +155,7 @@ void Controller::view_zoom(View* view)
 }
 
 // handle pan command for view
-void Controller::view_pan(View* view)
+void Controller::view_pan(shared_ptr<View> view)
 {
   Point point = get_Point();
   view->set_origin(point);
@@ -179,7 +179,7 @@ void Controller::model_create()
 }
 
 // handle course command for ship
-void Controller::ship_course(Ship* ship)
+void Controller::ship_course(shared_ptr<Ship> ship)
 {
   double heading;
   cin >> heading;
@@ -192,7 +192,7 @@ void Controller::ship_course(Ship* ship)
 }
 
 // handle position command for ship
-void Controller::ship_position(Ship* ship)
+void Controller::ship_position(shared_ptr<Ship> ship)
 {
   Point point = get_Point();
   double speed = get_speed();
@@ -200,33 +200,33 @@ void Controller::ship_position(Ship* ship)
 }
 
 // handle destination command for ship
-void Controller::ship_destination(Ship* ship)
+void Controller::ship_destination(shared_ptr<Ship> ship)
 {
-  Island* island = get_island();
+  shared_ptr<Island> island = get_island();
   double speed = get_speed();
   ship->set_destination_position_and_speed(island->get_location(), speed);
 }
 
 // handle load_at command for ship
-void Controller::ship_load_at(Ship* ship)
+void Controller::ship_load_at(shared_ptr<Ship> ship)
 {
   ship->set_load_destination(get_island());
 }
 
 // handle unload_at command for ship
-void Controller::ship_unload_at(Ship* ship)
+void Controller::ship_unload_at(shared_ptr<Ship> ship)
 {
   ship->set_unload_destination(get_island());
 }
 
 // handle dock_at command for ship
-void Controller::ship_dock_at(Ship* ship)
+void Controller::ship_dock_at(shared_ptr<Ship> ship)
 {
   ship->dock(get_island());
 }
 
 // handle attack command for ship
-void Controller::ship_attack(Ship* ship)
+void Controller::ship_attack(shared_ptr<Ship> ship)
 {
   string target_name;
   cin >> target_name;
@@ -234,19 +234,19 @@ void Controller::ship_attack(Ship* ship)
 }
 
 // handle refuel command for ship
-void Controller::ship_refuel(Ship* ship)
+void Controller::ship_refuel(shared_ptr<Ship> ship)
 {
   ship->refuel();
 }
 
 // handle stop command for ship
-void Controller::ship_stop(Ship* ship)
+void Controller::ship_stop(shared_ptr<Ship> ship)
 {
   ship->stop();
 }
 
 // handle stop_attack command for ship
-void Controller::ship_stop_attack(Ship* ship)
+void Controller::ship_stop_attack(shared_ptr<Ship> ship)
 {
   ship->stop_attack();
 }

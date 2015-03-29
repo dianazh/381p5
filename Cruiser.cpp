@@ -46,9 +46,12 @@ void Cruiser::describe() const
 }
 
 // Cruiser shall attack back when hit
-void Cruiser::receive_hit(int hit_force, Ship* attacker_ptr)
+void Cruiser::receive_hit(int hit_force, std::shared_ptr<Ship> attacker_ptr)
 {
   Ship::receive_hit(hit_force, attacker_ptr);
+  if (!is_afloat()) {
+    return;
+  }
   if (!is_attacking()) {
     attack(attacker_ptr);
   }

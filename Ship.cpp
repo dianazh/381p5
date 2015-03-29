@@ -5,15 +5,17 @@
 #include <iostream>
 using std::cout;
 using std::endl;
+using std::shared_ptr;
 
 // initialize, then output constructor message
 Ship::Ship(const std::string& name_, Point position_, double fuel_capacity_,
   double maximum_speed_, double fuel_consumption_, int resistance_)
-  :Sim_object(name_), Track_base(position_), fuel(fuel_capacity_),
+  :Sim_object(name_), fuel(fuel_capacity_),
   fuel_consumption(fuel_consumption_), fuel_capacity(fuel_capacity_), 
   maximum_speed(maximum_speed_), resistance(resistance_), ship_state(State::STOPPED),
   docked_Island(nullptr)
 {
+  track_base.set_position(position_);
   cout << "Ship " << get_name() << " constructed" << endl;
 }
 
@@ -32,8 +34,7 @@ Ship::~Ship()
 // Return true if ship can move (it is not dead in the water or in the process or sinking);
 bool Ship::can_move() const
 {
-  return !(ship_state == State::SINKING || ship_state == State::SUNK || ship_state == State::ON_THE_BOTTOM || 
-      ship_state == State::DEAD_IN_THE_WATER);
+  return !(ship_state == State::SUNK || ship_state == State::DEAD_IN_THE_WATER);
 }
 
 // Return true if ship is moving;
@@ -51,18 +52,12 @@ bool Ship::is_docked() const
 // Return true if ship is afloat (not in process of sinking), false if not
 bool Ship::is_afloat() const
 {
-  return !(ship_state == State::SINKING || ship_state == State::SUNK || ship_state == State::ON_THE_BOTTOM);
-}
-
-// Return true if ship is on the bottom
-bool Ship::is_on_the_bottom() const
-{
-  return ship_state == State::ON_THE_BOTTOM;
+  return !(ship_state == State::SUNK);
 }
 
 // Return true if the ship is Stopped and the distance to the supplied island
 // is less than or equal to 0.1 nm
-bool Ship::can_dock(Island* island_ptr) const
+bool Ship::can_dock(shared_ptr<Island> island_ptr) const
 {
   return (ship_state == State::STOPPED && 
     cartesian_distance(get_location(), island_ptr->get_location()) <= 0.1);
@@ -72,55 +67,29 @@ bool Ship::can_dock(Island* island_ptr) const
 void Ship::update()
 {
   cout << get_name();
-  if (is_afloat()) {
-    if (resistance >= 0) {
-      if (is_moving()) {
-        calculate_movement();
-        cout << " now at " << get_location();
-        g_Model_ptr->notify_location(get_name(), get_location());
-      } else {
-        switch (ship_state) {
-          case State::STOPPED:
-            cout << " stopped at " << get_location();
-            break;
-          case State::DOCKED:
-            cout << " docked at " << docked_Island->get_name();
-            break;
-          case State::DEAD_IN_THE_WATER:
-            cout << " dead in the water at " << get_location();
-            break;
-          default:
-            break;
-        }
-      }
-      cout << endl;
-    } else {
-      set_speed(0.);
-      ship_state = State::SINKING;
-      cout << " sinking" << endl;
-    } 
+  if (is_moving()) {
+    calculate_movement();
+    cout << " now at " << get_location();
+    g_Model_ptr->notify_location(get_name(), get_location());
   } else {
     switch (ship_state) {
-      case State::SINKING:
-      {
-        ship_state = State::SUNK;
-        cout << " sunk" << endl;
-        g_Model_ptr->notify_gone(get_name());
+      case State::STOPPED:
+        cout << " stopped at " << get_location();
         break;
-      }
+      case State::DOCKED:
+        cout << " docked at " << docked_Island->get_name();
+        break;
+      case State::DEAD_IN_THE_WATER:
+        cout << " dead in the water at " << get_location();
+        break;
       case State::SUNK:
-      {
-        ship_state = State::ON_THE_BOTTOM;
-        cout << " on the bottom" << endl;
-        break;
-      }
-      case State::ON_THE_BOTTOM:
-        cout << " on the bottom" << endl;
+        cout << " sunk" << endl;
         break;
       default:
         break;
     }
   }
+  cout << endl;
 }
 
 // output a description of current state to cout
@@ -128,37 +97,29 @@ void Ship::describe() const
 {
   // called by subclass
   cout << get_name() << " at " << get_location();
-  switch (ship_state) {
-    case State::SINKING:
-      cout << " sinking" << endl;
-      break;
-    case State::SUNK:
-      cout << " sunk" << endl;
-      break;
-    case State::ON_THE_BOTTOM:
-      cout << " on the bottom" << endl;
-      break;
-    default:
-      cout << ", fuel: " << fuel << " tons, resistance: " << resistance << endl;
-      switch (ship_state) {
-        case State::MOVING_TO_POSITION:
-          cout << "Moving to " << destination << " on " << Track_base::get_course_speed() << endl;
-          break;
-        case State::MOVING_ON_COURSE:
-          cout << "Moving on " << Track_base::get_course_speed() << endl;
-          break;
-        case State::DOCKED:
-          cout << "Docked at " << docked_Island->get_name() << endl;
-          break;
-        case State::STOPPED:
-          cout << "Stopped" << endl;
-          break;
-        case State::DEAD_IN_THE_WATER:
-          cout << "Dead in the water" << endl;
-          break;
-        default:
-          break;
-      }
+  if (ship_state == State::SUNK) {
+    cout << " sunk" << endl;
+  } else {
+    cout << ", fuel: " << fuel << " tons, resistance: " << resistance << endl;
+    switch (ship_state) {
+      case State::MOVING_TO_POSITION:
+        cout << "Moving to " << destination << " on " << track_base.get_course_speed() << endl;
+        break;
+      case State::MOVING_ON_COURSE:
+        cout << "Moving on " << track_base.get_course_speed() << endl;
+        break;
+      case State::DOCKED:
+        cout << "Docked at " << docked_Island->get_name() << endl;
+        break;
+      case State::STOPPED:
+        cout << "Stopped" << endl;
+        break;
+      case State::DEAD_IN_THE_WATER:
+        cout << "Dead in the water" << endl;
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -175,13 +136,13 @@ void Ship::set_destination_position_and_speed(Point destination_position, double
     if (speed <= maximum_speed) {
       destination = destination_position;
       Compass_vector cv(get_location(), destination);
-      Track_base::set_course(cv.direction);
-      Track_base::set_speed(speed);
+      track_base.set_course(cv.direction);
+      track_base.set_speed(speed);
       if (ship_state == State::DOCKED) {
         docked_Island = nullptr;
       }
       ship_state = State::MOVING_TO_POSITION;
-      cout << get_name() << " will sail on " << Track_base::get_course_speed() 
+      cout << get_name() << " will sail on " << track_base.get_course_speed() 
         << " to " << destination << endl;
     } else {
       throw Error("Ship cannot go that fast!");
@@ -196,13 +157,13 @@ void Ship::set_course_and_speed(double course, double speed)
 {
   if (can_move()) {
     if (speed <= maximum_speed) {
-      Track_base::set_course(course);
-      Track_base::set_speed(speed);
+      track_base.set_course(course);
+      track_base.set_speed(speed);
       if (ship_state == State::DOCKED) {
         docked_Island = nullptr;
       }
       ship_state = State::MOVING_ON_COURSE; 
-      cout << get_name() << " will sail on " << Track_base::get_course_speed() << endl;
+      cout << get_name() << " will sail on " << track_base.get_course_speed() << endl;
     } else {
       throw Error("Ship cannot go that fast!");
     }
@@ -215,7 +176,7 @@ void Ship::set_course_and_speed(double course, double speed)
 void Ship::stop()
 {
   if (can_move()) {
-    set_speed(0.);
+    track_base.set_speed(0.);
     ship_state = State::STOPPED;
     cout << get_name() << " stopping at " << get_location() << endl; 
   } else {
@@ -224,10 +185,10 @@ void Ship::stop()
 }
 
 // dock at an Island - set our position = Island's position, go into Docked state
-void Ship::dock(Island * island_ptr)
+void Ship::dock(shared_ptr<Island> island_ptr)
 {
   if (can_dock(island_ptr)) {
-    Track_base::set_position(island_ptr->get_location());
+    track_base.set_position(island_ptr->get_location());
     g_Model_ptr->notify_location(get_name(), get_location());
     ship_state = State::DOCKED;
     cout << get_name() << " docked at " << island_ptr-> get_name() << endl;
@@ -253,19 +214,19 @@ void Ship::refuel()
 }
 
 // Fat interface command function - will throw error
-void Ship::set_load_destination(Island *)
+void Ship::set_load_destination(shared_ptr<Island>)
 {
   throw Error("Cannot load at a destination!");
 }
 
 // Fat interface command function - will throw error
-void Ship::set_unload_destination(Island *)
+void Ship::set_unload_destination(shared_ptr<Island>)
 {
   throw Error("Cannot unload at a destination!");
 }
 
 // Fat interface command function - will throw error
-void Ship::attack(Ship * in_target_ptr)
+void Ship::attack(shared_ptr<Ship> in_target_ptr)
 {
   throw Error("Cannot attack!");
 }
@@ -279,10 +240,17 @@ void Ship::stop_attack()
 // receive a hit from an attacker
 // why attacker_ptr here?
 // this is a partial fat interface for warship, so that warship can attack back
-void Ship::receive_hit(int hit_force, Ship* attacker_ptr) 
+void Ship::receive_hit(int hit_force, shared_ptr<Ship> attacker_ptr) 
 {
   resistance -= hit_force;
   cout << get_name() << " hit with " << hit_force << ", resistance now " << resistance << endl;
+  if (resistance < 0) {
+    cout << get_name() << " sunk" << endl;
+    ship_state = State::SUNK;
+    track_base.set_speed(0.);
+    g_Model_ptr->notify_gone(get_name());
+    g_Model_ptr->remove_ship(shared_from_this());
+  }
 }
 
 // protected member function
@@ -292,7 +260,7 @@ double Ship:: get_maximum_speed() const
 }
 
 // protected member function
-Island* Ship::get_docked_Island() const
+shared_ptr<Island> Ship::get_docked_Island() const
 {
   if (ship_state == State::DOCKED) return docked_Island;
   else return nullptr;
@@ -323,7 +291,7 @@ void Ship:: calculate_movement()
   // get the distance to destination
   double destination_distance = cartesian_distance(get_location(), destination);
   // get full step distance we can move on this time step
-  double full_distance = get_speed() * time;
+  double full_distance = track_base.get_speed() * time;
   // get fuel required for full step distance
   double full_fuel_required = full_distance * fuel_consumption;  // tons = nm * tons/nm
   // how far and how long can we sail in this time period based on the fuel state?
@@ -339,20 +307,20 @@ void Ship:: calculate_movement()
   // are we are moving to a destination, and is the destination within the distance possible?
   if(ship_state == State::MOVING_TO_POSITION && destination_distance <= distance_possible) {
     // yes, make our new position the destination
-    set_position(destination);
+    track_base.set_position(destination);
     // we travel the destination distance, using that much fuel
     double fuel_required = destination_distance * fuel_consumption;
     fuel -= fuel_required;
-    set_speed(0.);
+    track_base.set_speed(0.);
     ship_state = State::STOPPED;
   } else {
     // go as far as we can, stay in the same movement state
     // simply move for the amount of time possible
-    update_position(time_possible);
+    track_base.update_position(time_possible);
     // have we used up our fuel?
     if(full_fuel_required >= fuel) {
       fuel = 0.0;
-      set_speed(0.);
+      track_base.set_speed(0.);
       ship_state = State::DEAD_IN_THE_WATER;
     } else {
       fuel -= full_fuel_required;

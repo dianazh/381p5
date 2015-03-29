@@ -10,14 +10,8 @@ abstract base class, so concrete classes derived from Warship must be declared.
 
 class Warship : public Ship {
 public:
-  // initialize, then output constructor message
-  Warship(const std::string& name_, Point position_, double fuel_capacity_, 
-    double maximum_speed_, double fuel_consumption_, int resistance_,
-    int firepower_, double maximum_range_);
-
-  // a pure virtual function to mark this as an abstract class, 
-  // but defined anyway to output destructor message
-  virtual ~Warship() = 0;
+  // output destructor message
+  virtual ~Warship();
   
   // perform warship-specific behavior
   void update() override;
@@ -27,7 +21,7 @@ public:
   // will  throw Error("Cannot attack!") if not Afloat
   // will throw Error("Warship may not attack itself!")
     // if supplied target is the same as this Warship
-  void attack(Ship* target_ptr_) override;
+  void attack(std::shared_ptr<Ship> target_ptr_) override;
 
   // will throw Error("Was not attacking!") if not Attacking
   void stop_attack() override;
@@ -36,6 +30,11 @@ public:
 
 protected:
   // future projects may need additional protected members
+
+  // initialize, then output constructor message
+  Warship(const std::string& name_, Point position_, double fuel_capacity_, 
+    double maximum_speed_, double fuel_consumption_, int resistance_,
+    int firepower_, double maximum_range_);
 
   // return true if this Warship is in the attacking state
   bool is_attacking() const;
@@ -47,7 +46,7 @@ protected:
   bool target_in_range() const;
 
   // get the target
-  Ship* get_target() const;
+  std::shared_ptr<Ship> get_target() const;
 
 private:
   enum class State {ATTACKING, NOT_ATTACKING};
@@ -55,6 +54,6 @@ private:
   int firepower; //total firepower
   double maximum_range; //mamximum attacking range
   State warship_state; //current state
-  Ship* target; //warship's target
+  std::weak_ptr<Ship> target; //warship's target
 };
 #endif

@@ -30,7 +30,7 @@ public:
 
   void update() override;
   void describe() const override;
-  void receive_hit(int hit_force, Ship* attacker_ptr) override;
+  void receive_hit(int hit_force, std::shared_ptr<Ship> attacker_ptr) override;
 
 private:
   static const double FUEL_CAPACITY;

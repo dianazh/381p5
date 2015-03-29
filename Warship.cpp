@@ -3,14 +3,14 @@
 #include <iostream>
 using std::cout;
 using std::endl;
+using std::shared_ptr;
 
 // initialize, then output constructor message
 Warship::Warship(const std::string& name_, Point position_, double fuel_capacity_, 
     double maximum_speed_, double fuel_consumption_, int resistance_,
     int firepower_, double maximum_range_)
   :Ship(name_, position_, fuel_capacity_, maximum_speed_, fuel_consumption_, resistance_),
-  firepower(firepower_), maximum_range(maximum_range_), warship_state(State::NOT_ATTACKING),
-  target(nullptr)
+  firepower(firepower_), maximum_range(maximum_range_), warship_state(State::NOT_ATTACKING)
 {
   cout << "Warship " << get_name() << " constructed" << endl;
 }
@@ -27,7 +27,7 @@ void Warship::update()
 {
   Ship::update();
   if (warship_state == State::ATTACKING) {
-    if (!is_afloat() || !target->is_afloat()) {
+    if (!is_afloat() || target.expired() || !target.lock()->is_afloat()) {
       stop_attack();
     } else {
       cout << get_name() << " is attacking" << endl;
@@ -37,19 +37,19 @@ void Warship::update()
 
 // attack on the ship supplied, throw error if can't attack
 // or made attacking the wrong target
-void Warship::attack(Ship* target_ptr_)
+void Warship::attack(shared_ptr<Ship> target_ptr_)
 {
   if (!is_afloat()) 
     throw Error("Cannot attack!");
   else {
-    if (target_ptr_ == this) {
+    if (target_ptr_ == shared_from_this()) {
       throw Error("Warship may not attack itself!");
-    } else if (target_ptr_ == target){
+    } else if (target_ptr_ == target.lock()){
       throw Error ("Already attacking this target!");
     } else {
       target = target_ptr_;
       warship_state = State::ATTACKING;
-      cout << get_name() << " will attack " << target->get_name() << endl;
+      cout << get_name() << " will attack " << target.lock()->get_name() << endl;
     }
   }
 }
@@ -60,7 +60,7 @@ void Warship::stop_attack()
   if (warship_state == State::NOT_ATTACKING) 
     throw Error("Was not attacking!");
   warship_state = State::NOT_ATTACKING;
-  target = nullptr;
+  target.reset();
   cout << get_name() << " stopping attack" << endl;
 }
 
@@ -69,7 +69,11 @@ void Warship::describe() const
 {
   Ship::describe();
   if (warship_state == State::ATTACKING) {
-    cout << "Attacking " << target->get_name() << endl;
+    if (target.expired() || !target.lock()->is_afloat()) {
+      cout << "Attacking absent ship" << endl;
+    } else {
+      cout << "Attacking " << target.lock()->get_name() << endl;
+    }
   }
 }
 
@@ -85,17 +89,17 @@ bool Warship::is_attacking() const
 void Warship::fire_at_target()
 {
   cout << get_name() << " fires" << endl;
-  target->receive_hit(firepower, this);
+  target.lock()->receive_hit(firepower, shared_from_this());
 }
 
 // is the current target in range?
 bool Warship::target_in_range() const
 {
-  return (cartesian_distance(get_location(), target->get_location()) <= maximum_range);
+  return (cartesian_distance(get_location(), target.lock()->get_location()) <= maximum_range);
 }
 
 // get the target
-Ship* Warship::get_target() const
+shared_ptr<Ship> Warship::get_target() const
 {
-  return target;
+  return target.lock();
 }

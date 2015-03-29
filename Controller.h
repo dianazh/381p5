@@ -5,6 +5,7 @@ with the user.
 
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
+#include <memory>
 
 //class Model; //pending
 class View;
@@ -25,41 +26,41 @@ public:
 private:
   //helper
   // quit from the controller run
-  void quit(View*);
+  void quit(std::shared_ptr<View>);
   // get input point from user
   Point get_Point();
   // get input speed from user
   double get_speed();
   // get input island from user
-  Island* get_island();
+  std::shared_ptr<Island> get_island();
   // command handler
   // handle size command for view
-  void view_size(View* view);
+  void view_size(std::shared_ptr<View> view);
   // handle zoom command for view
-  void view_zoom(View* view);
+  void view_zoom(std::shared_ptr<View> view);
   // handle pan command for view
-  void view_pan(View* view);
+  void view_pan(std::shared_ptr<View> view);
   // handle create command for model
   void model_create();
   // handle course command for ship
-  void ship_course(Ship* ship);
+  void ship_course(std::shared_ptr<Ship> ship);
   // handle position command for ship
-  void ship_position(Ship* ship);
+  void ship_position(std::shared_ptr<Ship> ship);
   // handle destination command for ship
-  void ship_destination(Ship* ship);
+  void ship_destination(std::shared_ptr<Ship> ship);
   // handle load_at command for ship
-  void ship_load_at(Ship* ship);
+  void ship_load_at(std::shared_ptr<Ship> ship);
   // handle unload_at command for ship
-  void ship_unload_at(Ship* ship);
+  void ship_unload_at(std::shared_ptr<Ship> ship);
   // handle dock_at command for ship
-  void ship_dock_at(Ship* ship);
+  void ship_dock_at(std::shared_ptr<Ship> ship);
   // handle attack command for ship
-  void ship_attack(Ship* ship);
+  void ship_attack(std::shared_ptr<Ship> ship);
   // handle refuel command for ship
-  void ship_refuel(Ship* ship);
+  void ship_refuel(std::shared_ptr<Ship> ship);
   // handle stop command for ship
-  void ship_stop(Ship* ship);
+  void ship_stop(std::shared_ptr<Ship> ship);
   // handle stop_attack command for ship
-  void ship_stop_attack(Ship* ship);
+  void ship_stop_attack(std::shared_ptr<Ship> ship);
 };
 #endif

@@ -4,6 +4,7 @@
 #include <iostream>
 using std::cout;
 using std::endl;
+using std::shared_ptr;
 
 const double Tanker::FUEL_CAPACITY = 100.0;
 const double Tanker::MAX_SPEED = 10.0;
@@ -52,7 +53,7 @@ void Tanker::set_course_and_speed(double course, double speed)
 // if both cargo destination are already set, throw Error("Tanker has cargo destinations!").
 // if they are the same, leave at the set values, and throw Error("Load and unload cargo destinations are the same!")
 // if both destinations are now set, start the cargo cycle
-void Tanker::set_load_destination(Island* island_ptr)
+void Tanker::set_load_destination(shared_ptr<Island> island_ptr)
 {
   if (tanker_state == State::NO_CARGO_DESTINATIONS) {
     load_destination = island_ptr;
@@ -67,7 +68,7 @@ void Tanker::set_load_destination(Island* island_ptr)
 }
 
 // see as load_destination
-void Tanker::set_unload_destination(Island* island_ptr)
+void Tanker::set_unload_destination(shared_ptr<Island> island_ptr)
 {
   if (tanker_state == State::NO_CARGO_DESTINATIONS) {
     unload_destination = island_ptr;

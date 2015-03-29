@@ -17,6 +17,8 @@ using std::find;
 using std::mem_fn;
 using std::cout;
 using std::endl;
+using std::shared_ptr;
+using std::make_shared;
 using namespace std::placeholders;
 
 Model* g_Model_ptr;
@@ -25,21 +27,13 @@ Model* g_Model_ptr;
 Model::Model()
   :time(0)
 {
-  Island* island_ptr;
-  island_ptr = new Island("Exxon", Point(10, 10), 1000, 200);
-  insert_island(island_ptr);
-  island_ptr = new Island("Shell", Point(0, 30), 1000, 200);
-  insert_island(island_ptr);
-  island_ptr = new Island("Bermuda", Point(20, 20));
-  insert_island(island_ptr);
+  insert_island(make_shared<Island>("Exxon", Point(10, 10), 1000, 200));
+  insert_island(make_shared<Island>("Shell", Point(0, 30), 1000, 200));
+  insert_island(make_shared<Island>("Bermuda", Point(20, 20)));
  
-  Ship* ship_ptr;
-  ship_ptr = create_ship("Ajax", "Cruiser", Point (15, 15));
-  insert_ship(ship_ptr);
-  ship_ptr = create_ship("Xerxes", "Cruiser", Point (25, 25));
-  insert_ship(ship_ptr);
-  ship_ptr = create_ship("Valdez", "Tanker", Point (30, 30));
-  insert_ship(ship_ptr);
+  insert_ship(create_ship("Ajax", "Cruiser", Point (15, 15)));
+  insert_ship(create_ship("Xerxes", "Cruiser", Point (25, 25)));
+  insert_ship(create_ship("Valdez", "Tanker", Point (30, 30)));
 
   cout << "Model constructed" << endl;
 }
@@ -47,9 +41,6 @@ Model::Model()
 // destroy all objects, output destructor message
 Model::~Model()
 {
-  for (auto pair : sim_objects) {
-    delete pair.second;
-  }
   cout << "Model destructed" << endl;
 }
 
@@ -76,7 +67,7 @@ bool Model::is_island_present(const string& name) const
 }
 
 // will throw Error("Island not found!") if no island of that name
-Island* Model::get_island_ptr(const string& name) const
+shared_ptr<Island> Model::get_island_ptr(const string& name) const
 {
   auto it = islands.find(name);
   if (it != islands.end()) {
@@ -95,15 +86,22 @@ bool Model::is_ship_present(const string& name) const
 }
 
 // add a new ship to the list, and update the view
-void Model::add_ship(Ship* new_ship)
+void Model::add_ship(shared_ptr<Ship> new_ship)
 {
   insert_ship(new_ship);
   // update the view
   new_ship->broadcast_current_state();
 }
 
+// remove the Ship from the containers
+void Model::remove_ship(shared_ptr<Ship> ship_ptr)
+{
+  sim_objects.erase(ship_ptr->get_name());
+  ships.erase(ship_ptr->get_name());
+}
+
 // will throw Error("Ship not found!") if no ship of that name
-Ship* Model::get_ship_ptr(const string& name) const
+shared_ptr<Ship> Model::get_ship_ptr(const string& name) const
 {
   auto it = ships.find(name);
   if (it != ships.end()) {
@@ -117,7 +115,7 @@ void Model::describe() const
 {
   for_each(sim_objects.begin(), sim_objects.end(),
       bind(&Sim_object::describe, 
-          bind(&map<string, Sim_object*>::value_type::second, _1)));
+          bind(&map<string, shared_ptr<Sim_object>>::value_type::second, _1)));
 }
 
 // increment the time, and tell all objects to update themselves
@@ -126,30 +124,22 @@ void Model::update()
   ++time;
   for_each(sim_objects.begin(), sim_objects.end(),
       bind(&Sim_object::update, 
-          bind(&map<string, Sim_object*>::value_type::second, _1)));
-  // delete ships that are on the bottom
-  vector<Ship*> temp_list;
-  for (auto pair : ships) {
-    if (pair.second->is_on_the_bottom()) {
-      temp_list.push_back(pair.second);
-    }
-  }
-  for_each(temp_list.begin(), temp_list.end(), bind(&Model::erase_ship, this, _1));
+          bind(&map<string, shared_ptr<Sim_object>>::value_type::second, _1)));
 }
 
 // Attaching a View adds it to the container and causes it to be updated
 // with all current objects'location (or other state information.
-void Model::attach(View* new_view)
+void Model::attach(shared_ptr<View> new_view)
 {
   views.push_back(new_view);
   for_each(sim_objects.begin(), sim_objects.end(), 
       bind(&Sim_object::broadcast_current_state, 
-          bind(&map<string, Sim_object*>::value_type::second, _1)));
+          bind(&map<string, shared_ptr<Sim_object>>::value_type::second, _1)));
 }
 
 // Detach the View by discarding the supplied pointer from the container of Views
 // - no updates sent to it thereafter.
-void Model::detach(View* view_ptr)
+void Model::detach(shared_ptr<View> view_ptr)
 {
   views.erase(find(views.begin(), views.end(), view_ptr)); //no need to delete the obj
 }
@@ -167,23 +157,15 @@ void Model::notify_gone(const string& name)
 }
 
 // insert an island to its containers
-void Model::insert_island(Island* island_ptr) 
+void Model::insert_island(shared_ptr<Island> island_ptr) 
 {
-  sim_objects.insert(std::pair<string, Sim_object*>(island_ptr->get_name(), island_ptr));
-  islands.insert(std::pair<string, Island*>(island_ptr->get_name(), island_ptr));
+  sim_objects.insert(std::pair<string, shared_ptr<Sim_object>>(island_ptr->get_name(), island_ptr));
+  islands.insert(std::pair<string, shared_ptr<Island>>(island_ptr->get_name(), island_ptr));
 }
 
 // insert a ship to its containers
-void Model::insert_ship(Ship* ship_ptr) 
+void Model::insert_ship(shared_ptr<Ship> ship_ptr) 
 {
-  sim_objects.insert(std::pair<string, Sim_object*>(ship_ptr->get_name(), ship_ptr));
-  ships.insert(std::pair<string, Ship*>(ship_ptr->get_name(), ship_ptr));
-}
-
-// delete a ship from its containers
-void Model::erase_ship(Ship* ship)
-{
-  sim_objects.erase(ship->get_name());
-  ships.erase(ship->get_name());
-  delete ship;
+  sim_objects.insert(std::pair<string, shared_ptr<Sim_object>>(ship_ptr->get_name(), ship_ptr));
+  ships.insert(std::pair<string, shared_ptr<Ship>>(ship_ptr->get_name(), ship_ptr));
 }
