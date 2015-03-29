@@ -33,7 +33,7 @@ Controller::~Controller()
 void Controller::run()
 {
   shared_ptr<View> view(std::make_shared<View>());
-  g_Model_ptr->attach(view);
+  Model::get_Instance().attach(view);
   // view commands
   map<string, void(Controller::*)(shared_ptr<View>)> view_commands = {
     {"size", &Controller::view_size}, 
@@ -48,14 +48,14 @@ void Controller::run()
   };
   string word;
   while (true) {
-    cout << "\nTime " << g_Model_ptr->get_time() << ": Enter command: ";
+    cout << "\nTime " << Model::get_Instance().get_time() << ": Enter command: ";
     cin >> word;
     try {
       if (word == "quit") {
         quit(view);
         return;
-      } else if (g_Model_ptr->is_ship_present(word)) {
-        shared_ptr<Ship> ship = g_Model_ptr->get_ship_ptr(word);
+      } else if (Model::get_Instance().is_ship_present(word)) {
+        shared_ptr<Ship> ship = Model::get_Instance().get_ship_ptr(word);
         // expect ship command
         string instr;
         cin >> instr;
@@ -68,9 +68,9 @@ void Controller::run()
       } else {
         // expect command for model or view
         if (word == "status") {
-          g_Model_ptr->describe();
+          Model::get_Instance().describe();
         } else if (word == "go") {
-          g_Model_ptr->update();
+          Model::get_Instance().update();
         } else if (word == "create") {
           model_create();
         } else if (word == "default") {
@@ -101,7 +101,7 @@ void Controller::run()
 // quit from the controller run
 void Controller::quit(shared_ptr<View> view)
 {
-  g_Model_ptr->detach(view);
+  Model::get_Instance().detach(view);
   cout << "Done" << endl;
 }
 
@@ -133,7 +133,7 @@ shared_ptr<Island> Controller::get_island()
 {
   string island_name;
   cin >> island_name;
-  return g_Model_ptr->get_island_ptr(island_name);
+  return Model::get_Instance().get_island_ptr(island_name);
 }
  
 // handle size command for view
@@ -169,13 +169,13 @@ void Controller::model_create()
   if (ship_name.size() < 2) {
     throw Error("Name is too short!");
   }
-  if (g_Model_ptr->is_name_in_use(ship_name)) {
+  if (Model::get_Instance().is_name_in_use(ship_name)) {
     throw Error("Name is already in use!");
   }
   string type;
   cin >> type;
   Point point = get_Point();
-  g_Model_ptr->add_ship(create_ship(ship_name, type, point));
+  Model::get_Instance().add_ship(create_ship(ship_name, type, point));
 }
 
 // handle course command for ship
@@ -230,7 +230,7 @@ void Controller::ship_attack(shared_ptr<Ship> ship)
 {
   string target_name;
   cin >> target_name;
-  ship->attack(g_Model_ptr->get_ship_ptr(target_name));
+  ship->attack(Model::get_Instance().get_ship_ptr(target_name));
 }
 
 // handle refuel command for ship

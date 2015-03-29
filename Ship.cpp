@@ -70,7 +70,7 @@ void Ship::update()
   if (is_moving()) {
     calculate_movement();
     cout << " now at " << get_location();
-    g_Model_ptr->notify_location(get_name(), get_location());
+    Model::get_Instance().notify_location(get_name(), get_location());
   } else {
     switch (ship_state) {
       case State::STOPPED:
@@ -126,7 +126,7 @@ void Ship::describe() const
 // let model notify all views of the ship's current state
 void Ship::broadcast_current_state()
 {
-  g_Model_ptr->notify_location(get_name(), get_location());
+  Model::get_Instance().notify_location(get_name(), get_location());
 }
 
 // Start moving to a destination position at a speed
@@ -189,7 +189,7 @@ void Ship::dock(shared_ptr<Island> island_ptr)
 {
   if (can_dock(island_ptr)) {
     track_base.set_position(island_ptr->get_location());
-    g_Model_ptr->notify_location(get_name(), get_location());
+    Model::get_Instance().notify_location(get_name(), get_location());
     ship_state = State::DOCKED;
     cout << get_name() << " docked at " << island_ptr-> get_name() << endl;
     docked_Island = island_ptr;
@@ -248,8 +248,8 @@ void Ship::receive_hit(int hit_force, shared_ptr<Ship> attacker_ptr)
     cout << get_name() << " sunk" << endl;
     ship_state = State::SUNK;
     track_base.set_speed(0.);
-    g_Model_ptr->notify_gone(get_name());
-    g_Model_ptr->remove_ship(shared_from_this());
+    Model::get_Instance().notify_gone(get_name());
+    Model::get_Instance().remove_ship(shared_from_this());
   }
 }
 

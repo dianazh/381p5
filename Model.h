@@ -11,13 +11,6 @@ Controller tells Model what to do; Model in turn tells the objects what do, and
 when asked to do so by an object, tells all the Views whenever anything changes that might be relevant.
 Model also provides facilities for looking up objects given their name.
 */
-
-/* 
-This skeleton file shows the required public and protected interface for the class, which you may not modify. 
-If no protected members are shown, there must be none in your version. 
-If any protected or private members are shown here, then your class must also have them and use them as intended.
-You should delete this comment.
-*/
 #ifndef MODEL_H
 #define MODEL_H
 #include <string>
@@ -32,15 +25,11 @@ class View;
 
 // Declare the global model pointer
 class Model;
-extern Model* g_Model_ptr;
 
 class Model {
 public:
-  // create the initial objects, output constructor message
-  Model();
-  
-  // destroy all objects, output destructor message
-  ~Model();
+  // get the instance
+  static Model& get_Instance();
 
   // return the current time
   int get_time() {return time;}
@@ -93,7 +82,7 @@ public:
 
 private:
   int time;    // the simulated time
-
+  
   // ordered container for sim_objects
   std::map<std::string, std::shared_ptr<Sim_object>> sim_objects;
   // ordered container for islands 
@@ -102,11 +91,18 @@ private:
   std::map<std::string, std::shared_ptr<Ship>> ships;
   // container for views 
   std::vector<std::shared_ptr<View>> views;
+
+  // create the initial objects, output constructor message
+  Model();
+
   //helper
   // insert an island to its containers
   void insert_island(std::shared_ptr<Island> island);
   // insert a ship to its containers
   void insert_ship(std::shared_ptr<Ship> ship);
+  
+  // destroy all objects, output destructor message
+  ~Model();
 };
 
 #endif

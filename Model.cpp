@@ -21,20 +21,25 @@ using std::shared_ptr;
 using std::make_shared;
 using namespace std::placeholders;
 
-Model* g_Model_ptr;
+Model& Model::get_Instance()
+{
+  static Model model;
+  return model;
+}
 
 // create the initial objects, output constructor message
 Model::Model()
   :time(0)
 {
-  insert_island(make_shared<Island>("Exxon", Point(10, 10), 1000, 200));
-  insert_island(make_shared<Island>("Shell", Point(0, 30), 1000, 200));
-  insert_island(make_shared<Island>("Bermuda", Point(20, 20)));
+  insert_island(shared_ptr<Island>(new Island ("Exxon", Point(10, 10), 1000, 200)));
+  insert_island(shared_ptr<Island>(new Island ("Shell", Point(0, 30), 1000, 200)));
+  insert_island(shared_ptr<Island>(new Island ("Bermuda", Point(20, 20))));
+  insert_island(shared_ptr<Island>(new Island ("Treasure_Island", Point(50, 5), 100, 5)));
  
   insert_ship(create_ship("Ajax", "Cruiser", Point (15, 15)));
   insert_ship(create_ship("Xerxes", "Cruiser", Point (25, 25)));
   insert_ship(create_ship("Valdez", "Tanker", Point (30, 30)));
-
+  
   cout << "Model constructed" << endl;
 }
 
