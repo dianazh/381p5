@@ -9,6 +9,7 @@ with the user.
 
 //class Model; //pending
 class View;
+class MapView;
 class Ship;
 class Island;
 class Point;
@@ -29,12 +30,13 @@ private:
   // get input island from user
   std::shared_ptr<Island> get_island();
   // command handler
+  void view_default(std::shared_ptr<MapView> view);
   // handle size command for view
-  void view_size(std::shared_ptr<View> view);
+  void view_size(std::shared_ptr<MapView> view);
   // handle zoom command for view
-  void view_zoom(std::shared_ptr<View> view);
+  void view_zoom(std::shared_ptr<MapView> view);
   // handle pan command for view
-  void view_pan(std::shared_ptr<View> view);
+  void view_pan(std::shared_ptr<MapView> view);
   // handle create command for model
   void model_create();
   // handle course command for ship

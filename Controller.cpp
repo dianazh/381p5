@@ -1,6 +1,7 @@
 #include "Controller.h"
 #include "Model.h"
 #include "View.h"
+#include "Views.h"
 #include "Ship.h"
 #include "Island.h"
 #include "Geometry.h"
@@ -8,21 +9,28 @@
 #include "Utility.h"
 #include <iostream>
 #include <string>
+#include <vector>
 #include <map>
 #include <functional>
+#include <algorithm>
 using std::cin;
 using std::cout;
 using std::endl;
 using std::string;
 using std::map;
+using std::vector;
 using std::shared_ptr;
 
 // create View object, run the program by acccepting user commands, then destroy View object
 void Controller::run()
 {
-  shared_ptr<View> map_view;
-  // view commands
-  map<string, void(Controller::*)(shared_ptr<View>)> view_commands = {
+  shared_ptr<MapView> map_view;
+  shared_ptr<SailingDataView> sailing_view;
+  map<string, shared_ptr<BridgeView>> bridge_views;
+  vector<shared_ptr<View>> views;
+  // map view commands
+  map<string, void(Controller::*)(shared_ptr<MapView>)> view_commands = {
+    {"default", &Controller::view_default}, 
     {"size", &Controller::view_size}, 
     {"zoom", &Controller::view_zoom}, 
     {"pan", &Controller::view_pan}
@@ -60,20 +68,46 @@ void Controller::run()
           Model::get_Instance().update();
         } else if (word == "create") {
           model_create();
-        } else if (word == "default") {
-          if (map_view)
-            map_view->set_defaults(); 
         } else if (word == "show") {
-          if (map_view)
-            map_view->draw(); 
+          std::for_each(views.begin(), views.end(), std::mem_fn(&View::draw));
         } else if (word == "open_map_view") {
           if (map_view) throw Error("Map view is already open!");
-          map_view.reset(new View());
+          map_view.reset(new MapView());
+          views.push_back(map_view);
           Model::get_Instance().attach(map_view);
         } else if (word == "close_map_view") {
           if (!map_view) throw Error("Map view is not open!");
           Model::get_Instance().detach(map_view);
+          views.erase(find(views.begin(), views.end(), map_view));
           map_view = nullptr;
+        } else if (word == "open_sailing_view") {
+          if (sailing_view) throw Error("Sailing data view is already open!");
+          sailing_view.reset(new SailingDataView());
+          views.push_back(sailing_view);
+          Model::get_Instance().attach(sailing_view);
+        } else if (word == "close_sailing_view") {
+          if (!sailing_view) throw Error("Sailing data view is not open!");
+          Model::get_Instance().detach(sailing_view);
+          views.erase(find(views.begin(), views.end(), sailing_view));
+          sailing_view = nullptr;
+        } else if (word == "open_bridge_view") {
+          string ownship;
+          cin >> ownship;
+          if (bridge_views.find(ownship) != bridge_views.end())
+            throw Error("Bridge view is already open for that ship!");
+          shared_ptr<BridgeView> new_view(new BridgeView(ownship));
+          bridge_views.insert(std::pair<string, shared_ptr<BridgeView>>(ownship, new_view));
+          views.push_back(new_view);
+          Model::get_Instance().attach(new_view);
+        } else if (word == "close_bridge_view") {
+          string ownship;
+          cin >> ownship;
+          auto target = bridge_views.find(ownship);
+          if (target == bridge_views.end())
+            throw Error("Bridge view for that ship is not open!");
+          Model::get_Instance().detach(target->second);
+          views.erase(find(views.begin(), views.end(), target->second));
+          bridge_views.erase(ownship);
         } else {
           auto fn = view_commands.find(word);
           if (fn != view_commands.end()) {
@@ -134,9 +168,15 @@ shared_ptr<Island> Controller::get_island()
   cin >> island_name;
   return Model::get_Instance().get_island_ptr(island_name);
 }
+
+void Controller::view_default(shared_ptr<MapView> view)
+{
+  if (!view) throw Error("Map view is not open!");
+  view->set_defaults(); 
+}
  
 // handle size command for view
-void Controller::view_size(shared_ptr<View> view)
+void Controller::view_size(shared_ptr<MapView> view)
 {
   if (!view) throw Error("Map view is not open!");
   int size;
@@ -146,7 +186,7 @@ void Controller::view_size(shared_ptr<View> view)
 }
 
 // handle zoom command for view
-void Controller::view_zoom(shared_ptr<View> view)
+void Controller::view_zoom(shared_ptr<MapView> view)
 {
   if (!view) throw Error("Map view is not open!");
   double scale;
@@ -156,7 +196,7 @@ void Controller::view_zoom(shared_ptr<View> view)
 }
 
 // handle pan command for view
-void Controller::view_pan(shared_ptr<View> view)
+void Controller::view_pan(shared_ptr<MapView> view)
 {
   if (!view) throw Error("Map view is not open!");
   Point point = get_Point();

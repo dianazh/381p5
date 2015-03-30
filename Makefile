@@ -18,10 +18,13 @@ p5_main.o: p5_main.cpp Model.h Controller.h
 Model.o: Model.cpp Ship_factory.h Utility.h Sim_object.h Island.h Ship.h View.h Geometry.h
 	$(CC) $(CFLAGS) Model.cpp
 
-Controller.o: Controller.cpp Ship_factory.h Utility.h Model.h View.h Ship.h Island.h Geometry.h
+Controller.o: Controller.cpp Ship_factory.h Utility.h Model.h View.h Ship.h Island.h Geometry.h Views.h
 	$(CC) $(CFLAGS) Controller.cpp
 
-View.o: View.cpp Geometry.h
+Views.o: Views.cpp Views.h View.h Navigation.h
+	$(CC) $(CFLAGS) Views.cpp
+
+View.o: View.cpp View.h Geometry.h
 	$(CC) $(CFLAGS) View.cpp
 
 Ship_factory.o: Ship_factory.cpp Ship_factory.h Utility.h Tanker.h Cruiser.h
