@@ -162,9 +162,6 @@ void MapView::set_defaults()
 
 const int SailingDataView::WIDTH = 10;
 
-SailingDataView::SailingDataView()
-{}
-
 void SailingDataView::update_ship_info(const std::string& name, double fuel, double course, double speed)
 {
   ShipInfo new_info = ShipInfo(fuel, course, speed);
@@ -204,15 +201,21 @@ const int BridgeView::X_SIZE = 19;
 const int BridgeView::Y_SIZE = 3;
 const double BridgeView::DEFAULT_SCALE = 10;
 const Point BridgeView::PLOT_ORIGIN = Point(-90, 0);
-const Point BridgeView::GRAPH_ORIGIN = Point(0, 0);
 const std::string BridgeView::MULTIPLE = "**"; // for drawing
-const std::string BridgeView::EMPTY = "  "; //for drawing
+const std::string BridgeView::EMPTY = ". "; //for drawing
 const std::string BridgeView::WATER = "w-"; //for drawing
 
 BridgeView::BridgeView(std::string ownship_)
   :PositionView(X_SIZE, DEFAULT_SCALE, PLOT_ORIGIN), 
   ownship(ownship_)
 {}
+
+void BridgeView::update_ship_info(const std::string& name, double fuel, double course, double speed)
+{
+  if (name == ownship) {
+    ownship_course = course;
+  }
+}
 
 void BridgeView::update_remove(const std::string& name)
 {
@@ -224,8 +227,6 @@ void BridgeView::update_remove(const std::string& name)
 
 void BridgeView::draw()
 {
-  int precision = cout.precision();
-  cout.precision(0);
   Point ownship_point;
   vector<vector<string>> arr;
   auto ship = objects.find(ownship);
@@ -235,29 +236,33 @@ void BridgeView::draw()
   } else {
     arr = vector<vector<string>>(X_SIZE, vector<string>(Y_SIZE, EMPTY));
     ownship_point = ship->second;
-    Compass_vector cv(GRAPH_ORIGIN, ownship_point);
-    cout << "Bridge view from " << ownship << " position " << ownship_point << " heading " << cv.direction << endl;
+    cout << "Bridge view from " << ownship << " position " << ownship_point << " heading " << ownship_course << endl;
     for (auto it : objects) {
       if (it.first == ownship) continue;
       Compass_position cp(ownship_point, it.second);
-      int AoB = cp.bearing - cv.direction;
-      if (AoB < MINUS_HALF_ANGLE) {
-        AoB += FULL_ANGLE;
-      } else if (AoB > PLUS_HALF_ANGLE) {
-        AoB -= FULL_ANGLE;
-      }
-      
-      int x, y;
-      if (get_subscripts(x, y, Point(AoB, 0))){
-        if (arr[x][y] != EMPTY) {
-            arr[x][y] = MULTIPLE;
-        } else {
-          arr[x][y] = it.first.substr(0,2);
+      // only ships in [0.005, 20] range are shown
+      if (cp.range >= 0.005 && cp.range <= 20) {
+        int AoB = cp.bearing - ownship_course;
+        if (AoB < MINUS_HALF_ANGLE) {
+          AoB += FULL_ANGLE;
+        } else if (AoB > PLUS_HALF_ANGLE) {
+          AoB -= FULL_ANGLE;
+        }
+        
+        int x, y;
+        if (get_subscripts(x, y, Point(AoB, 0))){
+          if (arr[x][y] != EMPTY) {
+              arr[x][y] = MULTIPLE;
+          } else {
+            arr[x][y] = it.first.substr(0,2);
+          }
         }
       }
     }
   }
   // output map
+  int precision = cout.precision();
+  cout.precision(0);
   string space = "     ";
   for (int i = Y_SIZE-1; i >= 0; --i) {
     cout << space;

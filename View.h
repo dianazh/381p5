@@ -45,10 +45,6 @@ public:
   
   // Discard the saved information - drawing will show only a empty pattern
   virtual void clear() = 0; 
- 
-protected:
-  View(); //prevent client from initializing View
-  
 };
 
 #endif

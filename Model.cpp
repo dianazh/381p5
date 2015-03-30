@@ -177,6 +177,11 @@ void Model::notify_location(const string& name, Point location)
   for_each(views.begin(), views.end(), bind(&View::update_location, _1, std::ref(name), std::ref(location)));
 }
 
+void Model::notify_ship_info(const std::string& name, double fuel, double course, double speed)
+{
+  for_each(views.begin(), views.end(), bind(&View::update_ship_info, _1, std::ref(name), fuel, course, speed));
+}
+
 // notify the views that an object is now gone
 void Model::notify_gone(const string& name)
 {

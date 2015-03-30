@@ -6,10 +6,14 @@ with the user.
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 #include <memory>
+#include <map>
+#include <vector>
 
 //class Model; //pending
 class View;
 class MapView;
+class SailingDataView;
+class BridgeView;
 class Ship;
 class Island;
 class Point;
@@ -20,9 +24,16 @@ public:
 	void run();
 
 private:
+  std::shared_ptr<MapView> map_view;
+  std::shared_ptr<SailingDataView> sailing_view;
+  std::map<std::string, std::shared_ptr<BridgeView>> bridge_views;
+  std::vector<std::shared_ptr<View>> views;
   //helper
   // quit from the controller run
   void quit(std::shared_ptr<View>);
+  // add & remove view from controller and model's list
+  void add_view(std::shared_ptr<View> view);
+  void remove_view(std::shared_ptr<View> view);
   // get input point from user
   Point get_Point();
   // get input speed from user

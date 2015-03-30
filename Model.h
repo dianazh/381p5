@@ -76,6 +76,8 @@ public:
   
   // notify the views about an object's location
   void notify_location(const std::string& name, Point location);
+  // notify the views about an object's info 
+  void notify_ship_info(const std::string& name, double fuel, double course, double speed);
   // notify the views that an object is now gone
   void notify_gone(const std::string& name);
 

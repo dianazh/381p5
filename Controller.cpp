@@ -24,10 +24,6 @@ using std::shared_ptr;
 // create View object, run the program by acccepting user commands, then destroy View object
 void Controller::run()
 {
-  shared_ptr<MapView> map_view;
-  shared_ptr<SailingDataView> sailing_view;
-  map<string, shared_ptr<BridgeView>> bridge_views;
-  vector<shared_ptr<View>> views;
   // map view commands
   map<string, void(Controller::*)(shared_ptr<MapView>)> view_commands = {
     {"default", &Controller::view_default}, 
@@ -73,40 +69,35 @@ void Controller::run()
         } else if (word == "open_map_view") {
           if (map_view) throw Error("Map view is already open!");
           map_view.reset(new MapView());
-          views.push_back(map_view);
-          Model::get_Instance().attach(map_view);
+          add_view(map_view);
         } else if (word == "close_map_view") {
           if (!map_view) throw Error("Map view is not open!");
-          Model::get_Instance().detach(map_view);
-          views.erase(find(views.begin(), views.end(), map_view));
+          remove_view(map_view);
           map_view = nullptr;
         } else if (word == "open_sailing_view") {
           if (sailing_view) throw Error("Sailing data view is already open!");
           sailing_view.reset(new SailingDataView());
-          views.push_back(sailing_view);
-          Model::get_Instance().attach(sailing_view);
+          add_view(sailing_view);
         } else if (word == "close_sailing_view") {
           if (!sailing_view) throw Error("Sailing data view is not open!");
-          Model::get_Instance().detach(sailing_view);
-          views.erase(find(views.begin(), views.end(), sailing_view));
+          remove_view(sailing_view);
           sailing_view = nullptr;
         } else if (word == "open_bridge_view") {
           string ownship;
           cin >> ownship;
+          shared_ptr<Ship> ship = Model::get_Instance().get_ship_ptr(ownship);
           if (bridge_views.find(ownship) != bridge_views.end())
             throw Error("Bridge view is already open for that ship!");
           shared_ptr<BridgeView> new_view(new BridgeView(ownship));
           bridge_views.insert(std::pair<string, shared_ptr<BridgeView>>(ownship, new_view));
-          views.push_back(new_view);
-          Model::get_Instance().attach(new_view);
+          add_view(new_view);
         } else if (word == "close_bridge_view") {
           string ownship;
           cin >> ownship;
           auto target = bridge_views.find(ownship);
           if (target == bridge_views.end())
             throw Error("Bridge view for that ship is not open!");
-          Model::get_Instance().detach(target->second);
-          views.erase(find(views.begin(), views.end(), target->second));
+          remove_view(target->second);
           bridge_views.erase(ownship);
         } else {
           auto fn = view_commands.find(word);
@@ -127,6 +118,18 @@ void Controller::run()
       return;
     }
   }
+}
+
+void Controller::add_view(shared_ptr<View> view)
+{
+  views.push_back(view);
+  Model::get_Instance().attach(view);
+}
+
+void Controller::remove_view(shared_ptr<View> view)
+{
+  Model::get_Instance().detach(view);
+  views.erase(find(views.begin(), views.end(), view));
 }
 
 // quit from the controller run

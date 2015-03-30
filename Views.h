@@ -3,8 +3,6 @@
 #include "View.h"
 #include <map>
 
-class Ship;
-
 class PositionView : public View {
 public:
   void update_location(const std::string& name, Point location) override;
@@ -17,7 +15,6 @@ public:
   
 protected:
   PositionView(int size_, double scale_, Point origin_); //prevent client from initializing
-
   int size;      // current size of the display
   double scale;    // distance per cell of the display
   Point origin;    // coordinates of the lower-left-hand corner
@@ -67,6 +64,7 @@ private:
 class BridgeView : public PositionView {
 public:
   BridgeView(std::string ownship_);
+  void update_ship_info(const std::string& name, double fuel, double course, double speed) override;
   void update_remove(const std::string& name) override;
   void draw() override;
 
@@ -76,12 +74,13 @@ private:
   static const int Y_SIZE;
   static const double DEFAULT_SCALE;
   static const Point PLOT_ORIGIN;
-  static const Point GRAPH_ORIGIN;
   static const std::string MULTIPLE; // for drawing
   static const std::string EMPTY; //for drawing
   static const std::string WATER; //for drawing
 
   std::string ownship;
+  double ownship_course;
   Point ownship_sunk_point;
 };
+
 #endif
