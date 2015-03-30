@@ -81,6 +81,33 @@ shared_ptr<Island> Model::get_island_ptr(const string& name) const
   throw Error("Island not found!");
 }
 
+// get the island of that position 
+std::shared_ptr<Island> Model::get_island_ptr(const Point& point) const
+{
+  for (auto it : islands) {
+    if (it.second->get_location() == point) {
+      return it.second; 
+    }
+  }
+  return nullptr;
+}
+
+std::shared_ptr<Island> Model::get_next_island(const Point& point, const std::map<std::string, std::shared_ptr<Island>>& visited) const 
+{
+  double shortest = -1;
+  shared_ptr<Island> next_stop;
+  for (auto it : islands) {
+    if (visited.find(it.first) == visited.end()) {
+      double distance = cartesian_distance(it.second->get_location(), point);
+      if (distance < shortest || shortest < 0) {
+        shortest = distance;
+        next_stop = it.second;
+      }
+    }
+  }
+  return next_stop;
+}
+
 // is there such an ship?
 bool Model::is_ship_present(const string& name) const
 {

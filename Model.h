@@ -42,6 +42,11 @@ public:
   bool is_island_present(const std::string& name) const;
   // will throw Error("Island not found!") if no island of that name
   std::shared_ptr<Island> get_island_ptr(const std::string& name) const;
+  // will return nullptr if no island of that position 
+  std::shared_ptr<Island> get_island_ptr(const Point& point) const;
+  // will return nullptr if all islands are visited
+  std::shared_ptr<Island> get_next_island(const Point& point, 
+    const std::map<std::string, std::shared_ptr<Island>>& visited) const;
 
   // is there such an ship?
   bool is_ship_present(const std::string& name) const;
