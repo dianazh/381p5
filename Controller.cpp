@@ -20,8 +20,7 @@ using std::shared_ptr;
 // create View object, run the program by acccepting user commands, then destroy View object
 void Controller::run()
 {
-  shared_ptr<View> view(std::make_shared<View>());
-  Model::get_Instance().attach(view);
+  shared_ptr<View> map_view;
   // view commands
   map<string, void(Controller::*)(shared_ptr<View>)> view_commands = {
     {"size", &Controller::view_size}, 
@@ -40,7 +39,7 @@ void Controller::run()
     cin >> word;
     try {
       if (word == "quit") {
-        quit(view);
+        quit(map_view);
         return;
       } else if (Model::get_Instance().is_ship_present(word)) {
         shared_ptr<Ship> ship = Model::get_Instance().get_ship_ptr(word);
@@ -62,13 +61,23 @@ void Controller::run()
         } else if (word == "create") {
           model_create();
         } else if (word == "default") {
-          view->set_defaults(); 
+          if (map_view)
+            map_view->set_defaults(); 
         } else if (word == "show") {
-          view->draw(); 
+          if (map_view)
+            map_view->draw(); 
+        } else if (word == "open_map_view") {
+          if (map_view) throw Error("Map view is already open!");
+          map_view.reset(new View());
+          Model::get_Instance().attach(map_view);
+        } else if (word == "close_map_view") {
+          if (!map_view) throw Error("Map view is not open!");
+          Model::get_Instance().detach(map_view);
+          map_view = nullptr;
         } else {
           auto fn = view_commands.find(word);
           if (fn != view_commands.end()) {
-            (this->*(fn->second))(view);
+            (this->*(fn->second))(map_view);
           } else {
             throw Error("Unrecognized command!");
           }
@@ -80,7 +89,7 @@ void Controller::run()
       while (cin.get() != '\n');
     } catch (std::exception& e2) {
       cout << e2.what() << endl;
-      quit(view);
+      quit(map_view);
       return;
     }
   }
@@ -89,7 +98,9 @@ void Controller::run()
 // quit from the controller run
 void Controller::quit(shared_ptr<View> view)
 {
-  Model::get_Instance().detach(view);
+  if (view) {
+    Model::get_Instance().detach(view);
+  }
   cout << "Done" << endl;
 }
 
@@ -127,6 +138,7 @@ shared_ptr<Island> Controller::get_island()
 // handle size command for view
 void Controller::view_size(shared_ptr<View> view)
 {
+  if (!view) throw Error("Map view is not open!");
   int size;
   cin >> size;
   if (!cin) throw Error("Expected an integer!");
@@ -136,6 +148,7 @@ void Controller::view_size(shared_ptr<View> view)
 // handle zoom command for view
 void Controller::view_zoom(shared_ptr<View> view)
 {
+  if (!view) throw Error("Map view is not open!");
   double scale;
   cin >> scale;
   if (!cin) throw Error("Expected a double!");
@@ -145,6 +158,7 @@ void Controller::view_zoom(shared_ptr<View> view)
 // handle pan command for view
 void Controller::view_pan(shared_ptr<View> view)
 {
+  if (!view) throw Error("Map view is not open!");
   Point point = get_Point();
   view->set_origin(point);
 }
