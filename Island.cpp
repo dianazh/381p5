@@ -9,15 +9,7 @@ const int Island::UNIT_TIME = 1;
 // initialize then output constructor message
 Island::Island (const std::string& name_, Point position_, double fuel_, double production_rate_)
   :Sim_object(name_), position(position_), fuel(fuel_), production_rate(production_rate_)
-{
-  cout << "Island " << get_name() << " constructed" << endl;
-}
-
-// output destructor message
-Island::~Island()
-{
-  cout << "Island " << get_name() << " destructed" << endl;
-}
+{}
 
 // Return whichever is less, the request or the amount left,
 // update the amount on hand accordingly, and output the amount supplied.

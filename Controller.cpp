@@ -17,18 +17,6 @@ using std::string;
 using std::map;
 using std::shared_ptr;
 
-// output constructor message
-Controller::Controller()
-{
-  cout << "Controller constructed" << endl;
-}
-
-// output destructor message
-Controller::~Controller()
-{
-  cout << "Controller destructed" << endl;
-}
-
 // create View object, run the program by acccepting user commands, then destroy View object
 void Controller::run()
 {

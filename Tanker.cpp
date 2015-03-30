@@ -19,15 +19,7 @@ Tanker::Tanker(const std::string& name_, Point position_)
   cargo(INIT_CARGO), cargo_capacity(CARGO_CAPACITY),
   tanker_state(State::NO_CARGO_DESTINATIONS),
   load_destination(nullptr), unload_destination(nullptr)
-{
-  cout << "Tanker " << get_name() << " constructed" << endl;
-}
-
-// output destructor message
-Tanker::~Tanker()
-{
-  cout << "Tanker " << get_name() << " destructed" << endl;
-}
+{}
 
 // check if this Tanker has assigned cargo destinations, if yes, throw error
 void Tanker::set_destination_position_and_speed(Point destination, double speed)

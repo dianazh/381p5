@@ -16,21 +16,8 @@ Ship::Ship(const std::string& name_, Point position_, double fuel_capacity_,
   docked_Island(nullptr)
 {
   track_base.set_position(position_);
-  cout << "Ship " << get_name() << " constructed" << endl;
 }
-
-/*
-Define the destructor function even if it was declared as a pure virtual function.
-This seems odd, because pure virtual functions are usually not defined in the class
-that declares them. But this is often done as a way to make a class abstract, 
-if there is no other virtual function that makes sense to mark as pure. Here we
-are defining it just to get the destructor message output.
-*/
-Ship::~Ship()
-{
-  cout << "Ship "  << get_name() << " destructed" << endl;
-}
-
+  
 // Return true if ship can move (it is not dead in the water or in the process or sinking);
 bool Ship::can_move() const
 {

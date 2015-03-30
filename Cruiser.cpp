@@ -14,15 +14,7 @@ const double Cruiser::MAX_ATTACKING_RANGE = 15.0;
 Cruiser::Cruiser(const std::string& name_, Point position_)
   :Warship(name_, position_, FUEL_CAPACITY, MAX_SPEED, FUEL_CONSUMPTION, 
       RESISTANCE, FIREPOWER, MAX_ATTACKING_RANGE)
-{
-  cout << "Cruiser " << get_name() << " constructed" << endl;
-}
-
-// output destructor message
-Cruiser::~Cruiser()
-{
-  cout << "Cruiser " << get_name() << " destructed" << endl;
-}
+{}
 
 // update the Cruiser: fire when in range; stop when target out of range
 void Cruiser::update()

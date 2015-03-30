@@ -11,16 +11,7 @@ Warship::Warship(const std::string& name_, Point position_, double fuel_capacity
     int firepower_, double maximum_range_)
   :Ship(name_, position_, fuel_capacity_, maximum_speed_, fuel_consumption_, resistance_),
   firepower(firepower_), maximum_range(maximum_range_), warship_state(State::NOT_ATTACKING)
-{
-  cout << "Warship " << get_name() << " constructed" << endl;
-}
-
-// a pure virtual function to mark this as an abstract class, 
-// but defined anyway to output destructor message
-Warship::~Warship()
-{
-  cout << "Warship " << get_name() << " destructed" << endl;
-}
+{}
 
 // perform warship-specific behavior
 void Warship::update()

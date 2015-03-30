@@ -20,15 +20,7 @@ const string View::EMPTY = ". ";
 // default constructor sets the default size, scale, and origin, outputs constructor message
 View::View()
   :size(DEFAULT_SIZE), scale(DEFAULT_SCALE), origin(DEFAULT_ORIGIN)
-{
-  cout << "View constructed" << endl;
-}
-
-// stop the tanker, forget both destinations
-View::~View()
-{
-  cout << "View destructed" << endl;
-}
+{}
 
 // Save the supplied name and location for future use in a draw() call
 // If the name is already present,the new location replaces the previous one.

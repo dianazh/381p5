@@ -27,6 +27,9 @@ Model& Model::get_Instance()
   return model;
 }
 
+Model::~Model()
+{}
+
 // create the initial objects, output constructor message
 Model::Model()
   :time(0)
@@ -39,14 +42,6 @@ Model::Model()
   insert_ship(create_ship("Ajax", "Cruiser", Point (15, 15)));
   insert_ship(create_ship("Xerxes", "Cruiser", Point (25, 25)));
   insert_ship(create_ship("Valdez", "Tanker", Point (30, 30)));
-  
-  cout << "Model constructed" << endl;
-}
-
-// destroy all objects, output destructor message
-Model::~Model()
-{
-  cout << "Model destructed" << endl;
 }
 
 // is name already in use for either ship or island?

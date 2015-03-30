@@ -10,9 +10,6 @@ abstract base class, so concrete classes derived from Warship must be declared.
 
 class Warship : public Ship {
 public:
-  // output destructor message
-  virtual ~Warship();
-  
   // perform warship-specific behavior
   void update() override;
 
