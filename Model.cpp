@@ -76,7 +76,7 @@ shared_ptr<Island> Model::get_island_ptr(const string& name) const
   throw Error("Island not found!");
 }
 
-// get the island of that position 
+// get the island of that position, return nullptr if not found
 std::shared_ptr<Island> Model::get_island_ptr(const Point& point) const
 {
   for (auto it : islands) {
@@ -87,6 +87,8 @@ std::shared_ptr<Island> Model::get_island_ptr(const Point& point) const
   return nullptr;
 }
 
+// return the island ptr that is closest to the given point while not in the visited list
+// will return nullptr if all islands are visited
 std::shared_ptr<Island> Model::get_next_island(const Point& point, const std::map<std::string, std::shared_ptr<Island>>& visited) const 
 {
   double shortest = -1;
@@ -120,9 +122,13 @@ void Model::add_ship(shared_ptr<Ship> new_ship)
   new_ship->broadcast_current_state();
 }
 
+// remove_ship will broadcast ship position and info the last time (for bridge view)
+// then notify all views the ship is gone and finally
 // remove the Ship from the containers
 void Model::remove_ship(shared_ptr<Ship> ship_ptr)
 {
+  ship_ptr->broadcast_current_state();
+  notify_gone(ship_ptr->get_name());
   sim_objects.erase(ship_ptr->get_name());
   ships.erase(ship_ptr->get_name());
 }

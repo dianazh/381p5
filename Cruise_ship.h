@@ -12,9 +12,9 @@ public:
   // This class overrides these Ship functions so that it can check if this Cruiser_ship is on a cruise. If so, stop the cruise.
   // if the destination is an island, go to that island and start the cruise. Otherwise, work as normal ships do.
   void set_destination_position_and_speed(Point destination, double speed) override;
-  // stops the cruise trip in is cruising
+  // stops the cruise trip if is cruising
   void set_course_and_speed(double course, double speed) override;
-  // stops the cruise trip in is cruising
+  // stops the cruise trip if is cruising
   void stop() override;
   void update() override;
   void describe() const override;

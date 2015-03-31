@@ -24,13 +24,14 @@ public:
 	void run();
 
 private:
-  std::shared_ptr<MapView> map_view;
-  std::shared_ptr<SailingDataView> sailing_view;
+  std::shared_ptr<MapView> map_view; //ptr to the only map view
+  std::shared_ptr<SailingDataView> sailing_view; //ptr to the only sailing view
+  // map of ownship_name, bridge_view_ptr of the ownship
   std::map<std::string, std::shared_ptr<BridgeView>> bridge_views;
+  // list of views in constructing order 
   std::vector<std::shared_ptr<View>> views;
+
   //helper
-  // quit from the controller run
-  void quit(std::shared_ptr<View>);
   // add & remove view from controller and model's list
   void add_view(std::shared_ptr<View> view);
   void remove_view(std::shared_ptr<View> view);
@@ -40,7 +41,31 @@ private:
   double get_speed();
   // get input island from user
   std::shared_ptr<Island> get_island();
+
   // command handler
+  // handle status command for model
+  void status();
+  // handle go command for model
+  void go();
+  // handle create command for model
+  void model_create();
+  // handle show command for model
+  void show();
+  // handle open_map_view command for model
+  void open_map_view();
+  // handle close_map_view command for model
+  void close_map_view();
+  // handle open_sailing_view command for model
+  void open_sailing_view();
+  // handle close_sailing_view command for model
+  void close_sailing_view();
+  // handle open_bridge_view command for model
+  void open_bridge_view();
+  // handle close_bridge_view command for model
+  void close_bridge_view();
+  // quit from the controller run
+  void quit();
+  // handle default command for view
   void view_default(std::shared_ptr<MapView> view);
   // handle size command for view
   void view_size(std::shared_ptr<MapView> view);
@@ -48,8 +73,6 @@ private:
   void view_zoom(std::shared_ptr<MapView> view);
   // handle pan command for view
   void view_pan(std::shared_ptr<MapView> view);
-  // handle create command for model
-  void model_create();
   // handle course command for ship
   void ship_course(std::shared_ptr<Ship> ship);
   // handle position command for ship

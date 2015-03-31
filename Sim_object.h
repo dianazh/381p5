@@ -10,7 +10,6 @@ struct Point;
 
 class Sim_object {
 public:
-  // Output the constructor message with object's name
   Sim_object(const std::string& name_);
 
   virtual ~Sim_object();

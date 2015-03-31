@@ -24,13 +24,27 @@ using std::shared_ptr;
 // create View object, run the program by acccepting user commands, then destroy View object
 void Controller::run()
 {
+  // general commands
+  map<string, void(Controller::*)()> commands = {
+    {"status", &Controller::status}, 
+    {"go", &Controller::go}, 
+    {"create", &Controller::model_create}, 
+    {"show", &Controller::show},
+    {"open_map_view", &Controller::open_map_view}, 
+    {"close_map_view", &Controller::close_map_view}, 
+    {"open_sailing_view", &Controller::open_sailing_view}, 
+    {"close_sailing_view", &Controller::close_sailing_view},
+    {"open_bridge_view", &Controller::open_bridge_view}, 
+    {"close_bridge_view", &Controller::close_bridge_view}
+  };
   // map view commands
-  map<string, void(Controller::*)(shared_ptr<MapView>)> view_commands = {
+  map<string, void(Controller::*)(shared_ptr<MapView>)> map_view_commands = {
     {"default", &Controller::view_default}, 
     {"size", &Controller::view_size}, 
     {"zoom", &Controller::view_zoom}, 
     {"pan", &Controller::view_pan}
   };
+  // ship commands
   map<string, void(Controller::*)(shared_ptr<Ship>)> ship_commands = {
     {"course", &Controller::ship_course}, {"position", &Controller::ship_position}, {"destination", &Controller::ship_destination},
     {"load_at", &Controller::ship_load_at}, {"unload_at", &Controller::ship_unload_at}, {"dock_at", &Controller::ship_dock_at},
@@ -43,7 +57,7 @@ void Controller::run()
     cin >> word;
     try {
       if (word == "quit") {
-        quit(map_view);
+        quit();
         return;
       } else if (Model::get_Instance().is_ship_present(word)) {
         shared_ptr<Ship> ship = Model::get_Instance().get_ship_ptr(word);
@@ -58,51 +72,14 @@ void Controller::run()
         }
       } else {
         // expect command for model or view
-        if (word == "status") {
-          Model::get_Instance().describe();
-        } else if (word == "go") {
-          Model::get_Instance().update();
-        } else if (word == "create") {
-          model_create();
-        } else if (word == "show") {
-          std::for_each(views.begin(), views.end(), std::mem_fn(&View::draw));
-        } else if (word == "open_map_view") {
-          if (map_view) throw Error("Map view is already open!");
-          map_view.reset(new MapView());
-          add_view(map_view);
-        } else if (word == "close_map_view") {
-          if (!map_view) throw Error("Map view is not open!");
-          remove_view(map_view);
-          map_view = nullptr;
-        } else if (word == "open_sailing_view") {
-          if (sailing_view) throw Error("Sailing data view is already open!");
-          sailing_view.reset(new SailingDataView());
-          add_view(sailing_view);
-        } else if (word == "close_sailing_view") {
-          if (!sailing_view) throw Error("Sailing data view is not open!");
-          remove_view(sailing_view);
-          sailing_view = nullptr;
-        } else if (word == "open_bridge_view") {
-          string ownship;
-          cin >> ownship;
-          shared_ptr<Ship> ship = Model::get_Instance().get_ship_ptr(ownship);
-          if (bridge_views.find(ownship) != bridge_views.end())
-            throw Error("Bridge view is already open for that ship!");
-          shared_ptr<BridgeView> new_view(new BridgeView(ownship));
-          bridge_views.insert(std::pair<string, shared_ptr<BridgeView>>(ownship, new_view));
-          add_view(new_view);
-        } else if (word == "close_bridge_view") {
-          string ownship;
-          cin >> ownship;
-          auto target = bridge_views.find(ownship);
-          if (target == bridge_views.end())
-            throw Error("Bridge view for that ship is not open!");
-          remove_view(target->second);
-          bridge_views.erase(ownship);
+        auto fn = commands.find(word);
+        if (fn != commands.end()) {
+            (this->*(fn->second))();
         } else {
-          auto fn = view_commands.find(word);
-          if (fn != view_commands.end()) {
-            (this->*(fn->second))(map_view);
+          // expect command for map view
+          auto map_fn = map_view_commands.find(word);
+          if (map_fn != map_view_commands.end()) {
+            (this->*(map_fn->second))(map_view);
           } else {
             throw Error("Unrecognized command!");
           }
@@ -114,12 +91,111 @@ void Controller::run()
       while (cin.get() != '\n');
     } catch (std::exception& e2) {
       cout << e2.what() << endl;
-      quit(map_view);
+      quit();
       return;
     }
   }
 }
 
+// handle status command for model
+void Controller::status()
+{
+  Model::get_Instance().describe();
+}
+
+// handle go command for model
+void Controller::go()
+{
+  Model::get_Instance().update();
+}
+
+// handle create command for model
+void Controller::model_create()
+{
+  string ship_name;
+  cin >> ship_name;
+  if (ship_name.size() < 2) {
+    throw Error("Name is too short!");
+  }
+  if (Model::get_Instance().is_name_in_use(ship_name)) {
+    throw Error("Name is already in use!");
+  }
+  string type;
+  cin >> type;
+  Point point = get_Point();
+  Model::get_Instance().add_ship(create_ship(ship_name, type, point));
+}
+
+// handle show command for model
+void Controller::show()
+{
+  std::for_each(views.begin(), views.end(), std::mem_fn(&View::draw));
+}
+
+// handle open_map_view command for model
+void Controller::open_map_view()
+{
+  if (map_view) throw Error("Map view is already open!");
+  map_view.reset(new MapView());
+  add_view(map_view);
+}
+
+// handle close_map_view command for model
+void Controller::close_map_view()
+{
+  if (!map_view) throw Error("Map view is not open!");
+  remove_view(map_view);
+  map_view = nullptr;
+}
+
+// handle open_sailing_view command for model
+void Controller::open_sailing_view()
+{
+  if (sailing_view) throw Error("Sailing data view is already open!");
+  sailing_view.reset(new SailingDataView());
+  add_view(sailing_view);
+}
+
+// handle close_sailing_view command for model
+void Controller::close_sailing_view()
+{
+  if (!sailing_view) throw Error("Sailing data view is not open!");
+  remove_view(sailing_view);
+  sailing_view = nullptr;
+}
+
+// handle open_bridge_view command for model
+void Controller::open_bridge_view()
+{
+  string ownship;
+  cin >> ownship;
+  shared_ptr<Ship> ship = Model::get_Instance().get_ship_ptr(ownship);
+  if (bridge_views.find(ownship) != bridge_views.end())
+    throw Error("Bridge view is already open for that ship!");
+  shared_ptr<BridgeView> new_view(new BridgeView(ownship));
+  bridge_views.insert(std::pair<string, shared_ptr<BridgeView>>(ownship, new_view));
+  add_view(new_view);
+}
+
+// handle close_bridge_view command for model
+void Controller::close_bridge_view()
+{
+  string ownship;
+  cin >> ownship;
+  auto target = bridge_views.find(ownship);
+  if (target == bridge_views.end())
+    throw Error("Bridge view for that ship is not open!");
+  remove_view(target->second);
+  bridge_views.erase(ownship);
+}
+
+// quit from the controller run
+void Controller::quit()
+{
+  cout << "Done" << endl;
+}
+
+// helpers
 void Controller::add_view(shared_ptr<View> view)
 {
   views.push_back(view);
@@ -130,15 +206,6 @@ void Controller::remove_view(shared_ptr<View> view)
 {
   Model::get_Instance().detach(view);
   views.erase(find(views.begin(), views.end(), view));
-}
-
-// quit from the controller run
-void Controller::quit(shared_ptr<View> view)
-{
-  if (view) {
-    Model::get_Instance().detach(view);
-  }
-  cout << "Done" << endl;
 }
 
 // get input point from user
@@ -172,6 +239,7 @@ shared_ptr<Island> Controller::get_island()
   return Model::get_Instance().get_island_ptr(island_name);
 }
 
+// handle default command for view
 void Controller::view_default(shared_ptr<MapView> view)
 {
   if (!view) throw Error("Map view is not open!");
@@ -204,23 +272,6 @@ void Controller::view_pan(shared_ptr<MapView> view)
   if (!view) throw Error("Map view is not open!");
   Point point = get_Point();
   view->set_origin(point);
-}
-
-// handle create command for model
-void Controller::model_create()
-{
-  string ship_name;
-  cin >> ship_name;
-  if (ship_name.size() < 2) {
-    throw Error("Name is too short!");
-  }
-  if (Model::get_Instance().is_name_in_use(ship_name)) {
-    throw Error("Name is already in use!");
-  }
-  string type;
-  cin >> type;
-  Point point = get_Point();
-  Model::get_Instance().add_ship(create_ship(ship_name, type, point));
 }
 
 // handle course command for ship

@@ -227,7 +227,6 @@ void BridgeView::update_remove(const std::string& name)
 
 void BridgeView::draw()
 {
-  Point ownship_point;
   vector<vector<string>> arr;
   auto ship = objects.find(ownship);
   if (ship == objects.end()) {
@@ -235,7 +234,7 @@ void BridgeView::draw()
     arr = vector<vector<string>>(X_SIZE, vector<string>(Y_SIZE, WATER));
   } else {
     arr = vector<vector<string>>(X_SIZE, vector<string>(Y_SIZE, EMPTY));
-    ownship_point = ship->second;
+    Point ownship_point = ship->second;
     cout << "Bridge view from " << ownship << " position " << ownship_point << " heading " << ownship_course << endl;
     for (auto it : objects) {
       if (it.first == ownship) continue;

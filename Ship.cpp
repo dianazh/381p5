@@ -241,8 +241,9 @@ void Ship::receive_hit(int hit_force, shared_ptr<Ship> attacker_ptr)
     cout << get_name() << " sunk" << endl;
     ship_state = State::SUNK;
     track_base.set_speed(0.);
-    Model::get_Instance().notify_ship_info(get_name(), fuel, track_base.get_course(), track_base.get_speed());
-    Model::get_Instance().notify_gone(get_name());
+    // remove_ship will broadcast ship position and info the last time (for bridge view)
+    // then notify all views the ship is gone
+    // then remove the ship from all containers
     Model::get_Instance().remove_ship(shared_from_this());
   }
 }

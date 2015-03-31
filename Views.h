@@ -63,8 +63,11 @@ private:
 
 class BridgeView : public PositionView {
 public:
+  // initialize with ownship's name
   BridgeView(std::string ownship_);
+  // get the course of ownship when given the ship_info
   void update_ship_info(const std::string& name, double fuel, double course, double speed) override;
+  // if the removed ship is ownship, memorize the sunk_point before removing it
   void update_remove(const std::string& name) override;
   void draw() override;
 
