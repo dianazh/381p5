@@ -76,33 +76,13 @@ shared_ptr<Island> Model::get_island_ptr(const string& name) const
   throw Error("Island not found!");
 }
 
-// get the island of that position, return nullptr if not found
-std::shared_ptr<Island> Model::get_island_ptr(const Point& point) const
+// will return all the islands' pointer as a list
+std::vector<std::shared_ptr<Island>> Model::get_islands() const
 {
-  for (auto it : islands) {
-    if (it.second->get_location() == point) {
-      return it.second; 
-    }
-  }
-  return nullptr;
-}
-
-// return the island ptr that is closest to the given point while not in the visited list
-// will return nullptr if all islands are visited
-std::shared_ptr<Island> Model::get_next_island(const Point& point, const std::map<std::string, std::shared_ptr<Island>>& visited) const 
-{
-  double shortest = -1;
-  shared_ptr<Island> next_stop;
-  for (auto it : islands) {
-    if (visited.find(it.first) == visited.end()) {
-      double distance = cartesian_distance(it.second->get_location(), point);
-      if (distance < shortest || shortest < 0) {
-        shortest = distance;
-        next_stop = it.second;
-      }
-    }
-  }
-  return next_stop;
+  vector<shared_ptr<Island>> list;
+  list.resize(islands.size());
+  std::transform(islands.begin(), islands.end(), list.begin(), bind(&map<string, shared_ptr<Island>>::value_type::second, _1));
+  return list;
 }
 
 // is there such an ship?

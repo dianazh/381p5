@@ -48,7 +48,7 @@ private:
   // handle go command for model
   void go();
   // handle create command for model
-  void model_create();
+  void create();
   // handle show command for model
   void show();
   // handle open_map_view command for model
@@ -66,13 +66,13 @@ private:
   // quit from the controller run
   void quit();
   // handle default command for view
-  void view_default(std::shared_ptr<MapView> view);
+  void view_default();
   // handle size command for view
-  void view_size(std::shared_ptr<MapView> view);
+  void view_size();
   // handle zoom command for view
-  void view_zoom(std::shared_ptr<MapView> view);
+  void view_zoom();
   // handle pan command for view
-  void view_pan(std::shared_ptr<MapView> view);
+  void view_pan();
   // handle course command for ship
   void ship_course(std::shared_ptr<Ship> ship);
   // handle position command for ship

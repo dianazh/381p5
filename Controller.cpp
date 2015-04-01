@@ -24,21 +24,18 @@ using std::shared_ptr;
 // create View object, run the program by acccepting user commands, then destroy View object
 void Controller::run()
 {
-  // general commands
+  // general commands for view and model
   map<string, void(Controller::*)()> commands = {
     {"status", &Controller::status}, 
     {"go", &Controller::go}, 
-    {"create", &Controller::model_create}, 
+    {"create", &Controller::create}, 
     {"show", &Controller::show},
     {"open_map_view", &Controller::open_map_view}, 
     {"close_map_view", &Controller::close_map_view}, 
     {"open_sailing_view", &Controller::open_sailing_view}, 
     {"close_sailing_view", &Controller::close_sailing_view},
     {"open_bridge_view", &Controller::open_bridge_view}, 
-    {"close_bridge_view", &Controller::close_bridge_view}
-  };
-  // map view commands
-  map<string, void(Controller::*)(shared_ptr<MapView>)> map_view_commands = {
+    {"close_bridge_view", &Controller::close_bridge_view},
     {"default", &Controller::view_default}, 
     {"size", &Controller::view_size}, 
     {"zoom", &Controller::view_zoom}, 
@@ -74,15 +71,9 @@ void Controller::run()
         // expect command for model or view
         auto fn = commands.find(word);
         if (fn != commands.end()) {
-            (this->*(fn->second))();
+          (this->*(fn->second))();
         } else {
-          // expect command for map view
-          auto map_fn = map_view_commands.find(word);
-          if (map_fn != map_view_commands.end()) {
-            (this->*(map_fn->second))(map_view);
-          } else {
-            throw Error("Unrecognized command!");
-          }
+          throw Error("Unrecognized command!");
         }
       }
     } catch (Error& e) {
@@ -110,7 +101,7 @@ void Controller::go()
 }
 
 // handle create command for model
-void Controller::model_create()
+void Controller::create()
 {
   string ship_name;
   cin >> ship_name;
@@ -240,38 +231,38 @@ shared_ptr<Island> Controller::get_island()
 }
 
 // handle default command for view
-void Controller::view_default(shared_ptr<MapView> view)
+void Controller::view_default()
 {
-  if (!view) throw Error("Map view is not open!");
-  view->set_defaults(); 
+  if (!map_view) throw Error("Map view is not open!");
+  map_view->set_defaults(); 
 }
  
 // handle size command for view
-void Controller::view_size(shared_ptr<MapView> view)
+void Controller::view_size()
 {
-  if (!view) throw Error("Map view is not open!");
+  if (!map_view) throw Error("Map view is not open!");
   int size;
   cin >> size;
   if (!cin) throw Error("Expected an integer!");
-  view->set_size(size);
+  map_view->set_size(size);
 }
 
 // handle zoom command for view
-void Controller::view_zoom(shared_ptr<MapView> view)
+void Controller::view_zoom()
 {
-  if (!view) throw Error("Map view is not open!");
+  if (!map_view) throw Error("Map view is not open!");
   double scale;
   cin >> scale;
   if (!cin) throw Error("Expected a double!");
-  view->set_scale(scale);
+  map_view->set_scale(scale);
 }
 
 // handle pan command for view
-void Controller::view_pan(shared_ptr<MapView> view)
+void Controller::view_pan()
 {
-  if (!view) throw Error("Map view is not open!");
+  if (!map_view) throw Error("Map view is not open!");
   Point point = get_Point();
-  view->set_origin(point);
+  map_view->set_origin(point);
 }
 
 // handle course command for ship

@@ -2,6 +2,7 @@
 #define CRUISE_SHIP
 #include "Ship.h"
 #include <map>
+#include <vector>
 #include <memory>
 
 class Cruise_ship : public Ship {
@@ -31,8 +32,12 @@ private:
   double cruise_speed;
   State cruise_state;
   std::map<std::string, std::shared_ptr<Island>> visited_islands;
+  //std::map<std::string, std::shared_ptr<Island>> all_islands;
+  std::vector<std::shared_ptr<Island>> all_islands;
 
   // helper
+  std::shared_ptr<Island> get_island(Point point) const;
+  std::shared_ptr<Island> get_next_stop() const;
   void cancel_cruise();
   void cruise_end();
 };

@@ -16,7 +16,9 @@ const int Cruise_ship::RESISTANCE = 0;
 Cruise_ship::Cruise_ship(const std::string& name_, Point position_)
   :Ship(name_, position_, FUEL_CAPACITY, MAX_SPEED, FUEL_CONSUMPTION, RESISTANCE), 
     cruise_destination(nullptr), cruise_state(State::NOT_CRUISING)
-{}
+{
+  all_islands =  Model::get_Instance().get_islands();
+}
 
 bool Cruise_ship::is_cruising() const
 {
@@ -27,7 +29,7 @@ void Cruise_ship::set_destination_position_and_speed(Point destination_position,
 {
   cancel_cruise();
   Ship::set_destination_position_and_speed(destination_position, speed);
-  cruise_destination = Model::get_Instance().get_island_ptr(destination_position);
+  cruise_destination = get_island(destination_position);
   // can start a cruise
   if (cruise_destination) {
     next_stop = cruise_destination;
@@ -82,7 +84,7 @@ void Cruise_ship::update()
       }
       case State::SET_COURSE:
       {
-        next_stop = Model::get_Instance().get_next_island(get_docked_Island()->get_location(), visited_islands);
+        next_stop = get_next_stop();
         if (!next_stop) { // return to beginning
           next_stop = cruise_destination;
         }
@@ -109,6 +111,35 @@ void Cruise_ship::describe() const
         cout << "Waiting during cruise at " << next_stop->get_name() << endl;
     }
   }
+}
+
+// will return nullptr if no island is at the point
+shared_ptr<Island> Cruise_ship::get_island(Point point) const
+{
+  for (auto it : all_islands) {
+    if (it->get_location() == point) {
+      return it;
+    }
+  }
+  return nullptr;
+}
+
+// will return nullptr if no island is not visited
+shared_ptr<Island> Cruise_ship::get_next_stop() const
+{
+  Point point = get_docked_Island()->get_location();
+  double shortest = -1;
+  shared_ptr<Island> next_stop;
+  for (auto it : all_islands) {
+    if (visited_islands.find(it->get_name()) == visited_islands.end()) {
+      double distance = cartesian_distance(it->get_location(), point);
+      if (distance < shortest || shortest < 0) {
+         shortest = distance;
+         next_stop = it;
+       } 
+     } 
+   } 
+   return next_stop;
 }
 
 void Cruise_ship::cancel_cruise()
