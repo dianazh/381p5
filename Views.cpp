@@ -11,6 +11,7 @@ using std::endl;
 using std::setw;
 using std::string;
 using std::vector;
+using std::map;
 
 PositionView::PositionView(int size_, double scale_, Point origin_)
   :size(size_), scale(scale_), origin(origin_)
@@ -162,14 +163,18 @@ void MapView::set_defaults()
 
 const int SailingDataView::WIDTH = 10;
 
-void SailingDataView::update_ship_info(const std::string& name, double fuel, double course, double speed)
+void SailingDataView::update_info(const std::string& name, const std::string& info_name, double info_value)
 {
-  ShipInfo new_info = ShipInfo(fuel, course, speed);
+  if (!(info_name == "fuel" || info_name == "course" || info_name == "speed")) {
+    return; 
+  }
   auto pair = objects.find(name);
   if (pair == objects.end()) {
-    objects.insert(std::pair<string, ShipInfo>(name, new_info));
+    map<string, double> new_info;
+    new_info[info_name] = info_value;
+    objects.insert(std::pair<string, std::map<std::string, double>>(name, new_info));
   } else {
-    pair->second = new_info;
+    pair->second[info_name] = info_value;
   }
 }
 
@@ -183,9 +188,9 @@ void SailingDataView::draw()
   cout << "----- Sailing Data -----" << endl;
   cout << setw(WIDTH) << "Ship" << setw(WIDTH) << "Fuel" << setw(WIDTH) << "Course" << setw(WIDTH) << "Speed" << endl;
   for (auto it : objects) {
-    cout << setw(WIDTH) << it.first << setw(WIDTH) << it.second.fuel 
-        << setw(WIDTH) << it.second.course 
-        << setw(WIDTH) << it.second.speed << endl;
+    cout << setw(WIDTH) << it.first << setw(WIDTH) << it.second["fuel"] 
+        << setw(WIDTH) << it.second["course"] 
+        << setw(WIDTH) << it.second["speed"] << endl;
   }
 }
 
@@ -194,9 +199,8 @@ void SailingDataView::clear()
   objects.clear();
 }
 
-const int BridgeView::FULL_ANGLE = 360;
-const int BridgeView::MINUS_HALF_ANGLE = -180;
-const int BridgeView::PLUS_HALF_ANGLE = 180;
+const double BridgeView::FULL_ANGLE = 360.0;
+const double BridgeView::HALF_ANGLE = 180.0;
 const int BridgeView::X_SIZE = 19;
 const int BridgeView::Y_SIZE = 3;
 const double BridgeView::DEFAULT_SCALE = 10;
@@ -210,10 +214,10 @@ BridgeView::BridgeView(std::string ownship_)
   ownship(ownship_)
 {}
 
-void BridgeView::update_ship_info(const std::string& name, double fuel, double course, double speed)
+void BridgeView::update_info(const std::string& name, const std::string& info_name, double info_value)
 {
-  if (name == ownship) {
-    ownship_course = course;
+  if (name == ownship && info_name == "course") {
+    ownship_course = info_value;
   }
 }
 
@@ -242,9 +246,9 @@ void BridgeView::draw()
       // only ships in [0.005, 20] range are shown
       if (cp.range >= 0.005 && cp.range <= 20) {
         int AoB = cp.bearing - ownship_course;
-        if (AoB < MINUS_HALF_ANGLE) {
+        if (AoB + HALF_ANGLE < 0) {
           AoB += FULL_ANGLE;
-        } else if (AoB > PLUS_HALF_ANGLE) {
+        } else if (AoB - HALF_ANGLE > 0) {
           AoB -= FULL_ANGLE;
         }
         

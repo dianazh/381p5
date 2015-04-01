@@ -57,8 +57,6 @@ void Ship::update()
   if (is_moving()) {
     calculate_movement();
     cout << " now at " << get_location();
-    Model::get_Instance().notify_location(get_name(), get_location());
-    Model::get_Instance().notify_ship_info(get_name(), fuel, track_base.get_course(), track_base.get_speed());
   } else {
     switch (ship_state) {
       case State::STOPPED:
@@ -78,6 +76,7 @@ void Ship::update()
     }
   }
   cout << endl;
+  broadcast_current_state();
 }
 
 // output a description of current state to cout
@@ -115,7 +114,9 @@ void Ship::describe() const
 void Ship::broadcast_current_state()
 {
   Model::get_Instance().notify_location(get_name(), get_location());
-  Model::get_Instance().notify_ship_info(get_name(), fuel, track_base.get_course(), track_base.get_speed());
+  Model::get_Instance().notify_info(get_name(), "fuel", fuel);
+  Model::get_Instance().notify_info(get_name(), "course", track_base.get_course());
+  Model::get_Instance().notify_info(get_name(), "speed", track_base.get_speed());
 }
 
 // Start moving to a destination position at a speed
@@ -133,7 +134,7 @@ void Ship::set_destination_position_and_speed(Point destination_position, double
       ship_state = State::MOVING_TO_POSITION;
       cout << get_name() << " will sail on " << track_base.get_course_speed() 
         << " to " << destination << endl;
-      Model::get_Instance().notify_ship_info(get_name(), fuel, track_base.get_course(), track_base.get_speed());
+      broadcast_current_state();
     } else {
       throw Error("Ship cannot go that fast!");
     }
@@ -154,7 +155,7 @@ void Ship::set_course_and_speed(double course, double speed)
       }
       ship_state = State::MOVING_ON_COURSE; 
       cout << get_name() << " will sail on " << track_base.get_course_speed() << endl;
-      Model::get_Instance().notify_ship_info(get_name(), fuel, track_base.get_course(), track_base.get_speed());
+      broadcast_current_state();
     } else {
       throw Error("Ship cannot go that fast!");
     }
@@ -170,7 +171,7 @@ void Ship::stop()
     track_base.set_speed(0.);
     ship_state = State::STOPPED;
     cout << get_name() << " stopping at " << get_location() << endl; 
-    Model::get_Instance().notify_ship_info(get_name(), fuel, track_base.get_course(), track_base.get_speed());
+    broadcast_current_state();
   } else {
     throw Error("Ship cannot move!");
   }
@@ -184,7 +185,7 @@ void Ship::dock(shared_ptr<Island> island_ptr)
     ship_state = State::DOCKED;
     cout << get_name() << " docked at " << island_ptr-> get_name() << endl;
     docked_Island = island_ptr;
-    Model::get_Instance().notify_location(get_name(), get_location());
+    broadcast_current_state();
   } else {
     throw Error("Can't dock!");
   }
@@ -200,7 +201,7 @@ void Ship::refuel()
       fuel += docked_Island->provide_fuel(need);
       cout << get_name() << " now has " << fuel << " tons of fuel" << endl;
     }
-    Model::get_Instance().notify_ship_info(get_name(), fuel, track_base.get_course(), track_base.get_speed());
+    broadcast_current_state();
   } else {
     throw Error("Must be docked!");
   }
@@ -241,9 +242,8 @@ void Ship::receive_hit(int hit_force, shared_ptr<Ship> attacker_ptr)
     cout << get_name() << " sunk" << endl;
     ship_state = State::SUNK;
     track_base.set_speed(0.);
-    // remove_ship will broadcast ship position and info the last time (for bridge view)
-    // then notify all views the ship is gone
-    // then remove the ship from all containers
+    broadcast_current_state();
+    Model::get_Instance().notify_gone(get_name());
     Model::get_Instance().remove_ship(shared_from_this());
   }
 }

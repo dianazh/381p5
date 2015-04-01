@@ -30,13 +30,12 @@ using the new settings.
 class View {
 public:
   virtual ~View();
-  // Save the supplied name and location for future use in a draw() call
-  // If the name is already present,the new location replaces the previous one.
-  virtual void update_location(const std::string& name, Point location);
 
-  // update the ship's information, like in update_location
-  // fat interface for SailingDataView
-  virtual void update_ship_info(const std::string& name, double fuel, double course, double speed);
+  // update the object's location 
+  virtual void update_location(const std::string& name, Point location);
+  // update the object's information 
+  // If the name is already present,the new info replaces the previous one.
+  virtual void update_info(const std::string& name, const std::string& info_name, double info_value);
   
   // Remove the name and its location; no error if the name is not present.
   virtual void update_remove(const std::string& name);

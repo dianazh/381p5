@@ -102,13 +102,9 @@ void Model::add_ship(shared_ptr<Ship> new_ship)
   new_ship->broadcast_current_state();
 }
 
-// remove_ship will broadcast ship position and info the last time (for bridge view)
-// then notify all views the ship is gone and finally
 // remove the Ship from the containers
 void Model::remove_ship(shared_ptr<Ship> ship_ptr)
 {
-  ship_ptr->broadcast_current_state();
-  notify_gone(ship_ptr->get_name());
   sim_objects.erase(ship_ptr->get_name());
   ships.erase(ship_ptr->get_name());
 }
@@ -158,14 +154,15 @@ void Model::detach(shared_ptr<View> view_ptr)
 }
 
 // notify the views about an object's location
-void Model::notify_location(const string& name, Point location)
+void Model::notify_location(const std::string& name, Point location)
 {
-  for_each(views.begin(), views.end(), bind(&View::update_location, _1, std::ref(name), std::ref(location)));
+  for_each(views.begin(), views.end(), bind(&View::update_location, _1, std::ref(name), location));
 }
 
-void Model::notify_ship_info(const std::string& name, double fuel, double course, double speed)
+// notify the views about an object's info
+void Model::notify_info(const std::string& name, const std::string& info_name, double info_value)
 {
-  for_each(views.begin(), views.end(), bind(&View::update_ship_info, _1, std::ref(name), fuel, course, speed));
+  for_each(views.begin(), views.end(), bind(&View::update_info, _1, std::ref(name), info_name, info_value));
 }
 
 // notify the views that an object is now gone

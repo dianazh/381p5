@@ -46,33 +46,28 @@ private:
 
 class SailingDataView : public View {
 public:
-  void update_ship_info(const std::string& name, double fuel, double course, double speed) override;
+  void update_info(const std::string& name, const std::string& info_name, double info_value) override;
   void update_remove(const std::string& name) override;
   void draw() override;
   void clear() override;
 
 private:
   static const int WIDTH;
-  struct ShipInfo{
-    ShipInfo(double fuel_, double course_, double speed_)
-      :fuel(fuel_), course(course_), speed(speed_){}
-    double fuel, course, speed;
-  };
-  std::map<std::string, ShipInfo> objects; //ordered list of ship objects remembered
+  std::map<std::string, std::map<std::string, double>> objects; //ordered list of ship objects remembered
 };
 
 class BridgeView : public PositionView {
 public:
   // initialize with ownship's name
   BridgeView(std::string ownship_);
-  // get the course of ownship when given the ship_info
-  void update_ship_info(const std::string& name, double fuel, double course, double speed) override;
+  // get the course of ownship when given ship info
+  void update_info(const std::string& name, const std::string& info_name, double info_value) override;
   // if the removed ship is ownship, memorize the sunk_point before removing it
   void update_remove(const std::string& name) override;
   void draw() override;
 
 private:
-  static const int FULL_ANGLE, MINUS_HALF_ANGLE, PLUS_HALF_ANGLE;
+  static const double FULL_ANGLE, HALF_ANGLE;
   static const int X_SIZE;
   static const int Y_SIZE;
   static const double DEFAULT_SCALE;
