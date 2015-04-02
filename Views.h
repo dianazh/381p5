@@ -45,17 +45,18 @@ private:
 class SailingDataView : public View {
 public:
   // update ship's speed 
-  virtual void update_ship_speed(const std::string& name, double value);
+  void update_ship_speed(const std::string& name, double value);
   // update ship's course 
-  virtual void update_ship_course(const std::string& name, double value);
+  void update_ship_course(const std::string& name, double value);
   // update ship's fuel
-  virtual void update_ship_fuel(const std::string& name, double value);
+  void update_ship_fuel(const std::string& name, double value);
+  // remove an object
   void update_remove(const std::string& name) override;
   void draw() override;
   void clear() override;
   
 private:
-  static const int WIDTH;
+  static const int WIDTH; // default width for view entries
   struct ShipInfo {
     double fuel, speed, course;
   };
@@ -66,6 +67,7 @@ class BridgeView : public View {
 public:
   // initialize with ownship's name
   BridgeView(std::string ownship_);
+  // get all objects' location
   void update_location(const std::string& name, Point location) override;
   // get the course of ownship 
   void update_ship_course(const std::string& name, double value) override;
@@ -76,7 +78,7 @@ public:
 
 private:
   // Calculate the cell subscripts corresponding to the location parameter, using the 
-  // current size, scale, and origin of the display. 
+  // default size, scale, and origin of the display. 
   // Return true if the location is within the map, false if not
   bool get_subscripts(int &ix, int &iy, Point location);
 

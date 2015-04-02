@@ -323,7 +323,7 @@ void BridgeView::clear()
 }
 
 // Calculate the cell subscripts corresponding to the supplied location parameter, 
-// using the current size, scale, and origin of the display. 
+// using the default size, scale, and origin of the display. 
 // This function assumes that origin is a  member variable of type Point, 
 // scale is a double value, and size is an integer for the number of rows/columns 
 // currently being used for the grid.
