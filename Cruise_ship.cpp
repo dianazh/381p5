@@ -95,7 +95,6 @@ void Cruise_ship::update()
           next_stop = cruise_destination;
         }
         Ship::set_destination_position_and_speed(next_stop->get_location(), cruise_speed);
-        //visited_islands.insert(std::pair<string, shared_ptr<Island>>(next_stop->get_name(), next_stop));
         cruise_state = State::TO_NEXT_STOP;
         cout << get_name() << " will visit " << next_stop->get_name() << endl;
         break;
