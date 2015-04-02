@@ -1,4 +1,4 @@
- /* Controller
+/* Controller
 This class is responsible for controlling the Model and View according to interactions
 with the user.
 */
@@ -19,9 +19,9 @@ class Island;
 class Point;
 
 class Controller {
-public:	
-	// create View object, run the program by acccepting user commands, then destroy View object
-	void run();
+public:  
+  // create View object, run the program by acccepting user commands, then destroy View object
+  void run();
 
 private:
   std::shared_ptr<MapView> map_view; //ptr to the only map view

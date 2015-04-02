@@ -20,11 +20,14 @@ Cruise_ship::Cruise_ship(const std::string& name_, Point position_)
   all_islands =  Model::get_Instance().get_islands();
 }
 
+// return true if status != not_cruising
 bool Cruise_ship::is_cruising() const
 {
   return cruise_state != State::NOT_CRUISING;
 }
 
+// if the destination is an island, go to that island and start the cruise. Otherwise, work as
+// normal ships do.
 void Cruise_ship::set_destination_position_and_speed(Point destination_position, double speed)
 {
   cancel_cruise();
@@ -40,18 +43,21 @@ void Cruise_ship::set_destination_position_and_speed(Point destination_position,
   }
 }
 
+// stops the cruise trip if is cruising
 void Cruise_ship::set_course_and_speed(double course, double speed)
 {
   cancel_cruise();
   Ship::set_course_and_speed(course, speed);
 }
 
+// stops the cruise trip if is cruising
 void Cruise_ship::stop()
 {
   cancel_cruise();
   Ship::stop();
 }
 
+// update cruise state according to current state
 void Cruise_ship::update()
 {
   Ship::update();
@@ -89,7 +95,7 @@ void Cruise_ship::update()
           next_stop = cruise_destination;
         }
         Ship::set_destination_position_and_speed(next_stop->get_location(), cruise_speed);
-        visited_islands.insert(std::pair<string, shared_ptr<Island>>(next_stop->get_name(), next_stop));
+        //visited_islands.insert(std::pair<string, shared_ptr<Island>>(next_stop->get_name(), next_stop));
         cruise_state = State::TO_NEXT_STOP;
         cout << get_name() << " will visit " << next_stop->get_name() << endl;
         break;
@@ -100,6 +106,7 @@ void Cruise_ship::update()
   }
 }
 
+// output information about the current state
 void Cruise_ship::describe() const
 {
   cout << "\nCruise_ship ";
@@ -142,6 +149,7 @@ shared_ptr<Island> Cruise_ship::get_next_stop() const
    return next_stop;
 }
 
+// cancel a cruise if in a cruise, print end msg
 void Cruise_ship::cancel_cruise()
 {
   if (is_cruising()) {
@@ -150,6 +158,7 @@ void Cruise_ship::cancel_cruise()
   }
 }
 
+// cancel a cruise, reset all the values
 void Cruise_ship::cruise_end()
 {
   cruise_destination = nullptr;

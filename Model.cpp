@@ -21,14 +21,12 @@ using std::shared_ptr;
 using std::make_shared;
 using namespace std::placeholders;
 
+// get the instance
 Model& Model::get_Instance()
 {
   static Model model;
   return model;
 }
-
-Model::~Model()
-{}
 
 // create the initial objects, output constructor message
 Model::Model()

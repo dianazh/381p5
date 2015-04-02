@@ -59,10 +59,6 @@ public:
   // increment the time, and tell all objects to update themselves
   void update();  
   
-  /* Note: In Project 4 there is only one View. There will be multiple View objects
-  later. So implement the View services so that multiple Views are possible by
-  using a container of View pointers.  You should delete this comment. */
-    
   /* View services */
   // Attaching a View adds it to the container and causes it to be updated
   // with all current objects'location (or other state information.
@@ -100,7 +96,7 @@ private:
   // container for views 
   std::vector<std::shared_ptr<View>> views;
 
-  // create the initial objects, output constructor message
+  // private constructor 
   Model();
 
   //helper
@@ -109,8 +105,6 @@ private:
   // insert a ship to its containers
   void insert_ship(std::shared_ptr<Ship> ship);
   
-  // destroy all objects, output destructor message
-  ~Model();
 };
 
 #endif

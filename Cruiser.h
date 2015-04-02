@@ -10,13 +10,6 @@ fuel capacity and initial amount: 1000, maximum speed 20., fuel consumption 10.t
 resistance 6, firepower 3, maximum attacking range 15
 */
 
-/* 
-This skeleton file shows the required public and protected interface for the class, which you may not modify. 
-If no protected members are shown, there must be none in your version. 
-If any protected or private members are shown here, then your class must also have them and use them as intended.
-You should delete this comment.
-*/
-
 #ifndef CRUISER_H
 #define CRUISER_H
 #include "Warship.h"
@@ -31,13 +24,13 @@ public:
   void receive_hit(int hit_force, std::shared_ptr<Ship> attacker_ptr) override;
 
 private:
+  // default values
   static const double FUEL_CAPACITY;
   static const double MAX_SPEED;
   static const double FUEL_CONSUMPTION;
   static const int RESISTANCE;
   static const int FIREPOWER;
   static const double MAX_ATTACKING_RANGE;
-
 };
 
 #endif
