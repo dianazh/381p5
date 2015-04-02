@@ -114,9 +114,9 @@ void Ship::describe() const
 void Ship::broadcast_current_state()
 {
   Model::get_Instance().notify_location(get_name(), get_location());
-  Model::get_Instance().notify_info(get_name(), "fuel", fuel);
-  Model::get_Instance().notify_info(get_name(), "course", track_base.get_course());
-  Model::get_Instance().notify_info(get_name(), "speed", track_base.get_speed());
+  Model::get_Instance().notify_ship_fuel(get_name(), fuel);
+  Model::get_Instance().notify_ship_course(get_name(), track_base.get_course());
+  Model::get_Instance().notify_ship_speed(get_name(), track_base.get_speed());
 }
 
 // Start moving to a destination position at a speed

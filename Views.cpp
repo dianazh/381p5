@@ -13,13 +13,21 @@ using std::string;
 using std::vector;
 using std::map;
 
-PositionView::PositionView(int size_, double scale_, Point origin_)
-  :size(size_), scale(scale_), origin(origin_)
+
+const int MapView::DEFAULT_SIZE = 25;
+const double MapView::DEFAULT_SCALE = 2.0;
+const Point MapView::DEFAULT_ORIGIN = Point(-10, -10);
+const string MapView::MULTIPLE = "* ";
+const string MapView::EMPTY = ". ";
+
+// default constructor sets the default size, scale, and origin, outputs constructor message
+MapView::MapView()
+  :size(DEFAULT_SIZE), scale(DEFAULT_SCALE), origin(DEFAULT_ORIGIN)
 {}
 
 // Save the supplied name and location for future use in a draw() call
 // If the name is already present,the new location replaces the previous one.
-void PositionView::update_location(const std::string& name, Point location)
+void MapView::update_location(const std::string& name, Point location)
 {
   auto pair = objects.find(name);
   if (pair == objects.end()) {
@@ -30,50 +38,10 @@ void PositionView::update_location(const std::string& name, Point location)
 }
 
 // Remove the name and its location; no error if the name is not present.
-void PositionView::update_remove(const std::string& name)
+void MapView::update_remove(const std::string& name)
 {
   objects.erase(name);
 }
-
-// Discard the saved information
-void PositionView::clear()
-{
-  objects.clear();
-}
-
-// Calculate the cell subscripts corresponding to the supplied location parameter, 
-// using the current size, scale, and origin of the display. 
-// This function assumes that origin is a  member variable of type Point, 
-// scale is a double value, and size is an integer for the number of rows/columns 
-// currently being used for the grid.
-// Return true if the location is within the grid, false if not
-bool PositionView::get_subscripts(int &ix, int &iy, Point location)
-{
-  // adjust with origin and scale
-  Cartesian_vector subscripts = (location - origin) / scale;
-  // truncate coordinates to integer after taking the floor
-  // floor function will produce integer smaller than even for negative values, 
-  // so - 0.05 => -1., which will be outside the array.
-  ix = int(floor(subscripts.delta_x));
-  iy = int(floor(subscripts.delta_y));
-  // if out of range, return false
-  if ((ix < 0) || (ix >= size) || (iy < 0) || (iy >= size)) {
-    return false;
-    }
-  else
-    return true;
-}
-
-const int MapView::DEFAULT_SIZE = 25;
-const double MapView::DEFAULT_SCALE = 2.0;
-const Point MapView::DEFAULT_ORIGIN = Point(-10, -10);
-const string MapView::MULTIPLE = "* ";
-const string MapView::EMPTY = ". ";
-
-// default constructor sets the default size, scale, and origin, outputs constructor message
-MapView::MapView()
-  :PositionView(DEFAULT_SIZE, DEFAULT_SCALE, DEFAULT_ORIGIN)
-{}
 
 // prints out the current map
 void MapView::draw()
@@ -129,6 +97,12 @@ void MapView::draw()
   cout.precision(precision);
 }
 
+// Discard the saved information
+void MapView::clear()
+{
+  objects.clear();
+}
+
 // modify the display parameters
 void MapView::set_size(int size_)
 {
@@ -153,30 +127,78 @@ void MapView::set_origin(Point origin_)
   origin = origin_;
 }
 
-// modify the display parameters
+// set display parameters to map's default
 void MapView::set_defaults()
 {
   size = DEFAULT_SIZE;
   scale = DEFAULT_SCALE;
-  origin = DEFAULT_ORIGIN; 
+  origin = DEFAULT_ORIGIN;
+}
+
+// Calculate the cell subscripts corresponding to the supplied location parameter, 
+// using the current size, scale, and origin of the display. 
+// This function assumes that origin is a  member variable of type Point, 
+// scale is a double value, and size is an integer for the number of rows/columns 
+// currently being used for the grid.
+// Return true if the location is within the grid, false if not
+bool MapView::get_subscripts(int &ix, int &iy, Point location)
+{
+  // adjust with origin and scale
+  Cartesian_vector subscripts = (location - origin) / scale;
+  // truncate coordinates to integer after taking the floor
+  // floor function will produce integer smaller than even for negative values, 
+  // so - 0.05 => -1., which will be outside the array.
+  ix = int(floor(subscripts.delta_x));
+  iy = int(floor(subscripts.delta_y));
+  // if out of range, return false
+  if ((ix < 0) || (ix >= size) || (iy < 0) || (iy >= size)) {
+    return false;
+    }
+  else
+    return true;
 }
 
 const int SailingDataView::WIDTH = 10;
 
-void SailingDataView::update_info(const std::string& name, const std::string& info_name, double info_value)
+// update ship's speed 
+void SailingDataView::update_ship_speed(const std::string& name, double value)
 {
-  if (!(info_name == "fuel" || info_name == "course" || info_name == "speed")) {
-    return; 
-  }
   auto pair = objects.find(name);
   if (pair == objects.end()) {
-    map<string, double> new_info;
-    new_info[info_name] = info_value;
-    objects.insert(std::pair<string, std::map<std::string, double>>(name, new_info));
+    ShipInfo new_info;
+    new_info.speed = value;
+    objects.insert(std::pair<string, ShipInfo>(name, new_info));
   } else {
-    pair->second[info_name] = info_value;
+    pair->second.speed = value;
   }
 }
+
+// update ship's course 
+void SailingDataView::update_ship_course(const std::string& name, double value)
+{
+  auto pair = objects.find(name);
+  if (pair == objects.end()) {
+    ShipInfo new_info;
+    new_info.course = value;
+    objects.insert(std::pair<string, ShipInfo>(name, new_info));
+  } else {
+    pair->second.course= value;
+  }
+}
+
+// update ship's fuel
+void SailingDataView::update_ship_fuel(const std::string& name, double value)
+{
+  auto pair = objects.find(name);
+  if (pair == objects.end()) {
+    ShipInfo new_info;
+    new_info.fuel= value;
+    objects.insert(std::pair<string, ShipInfo>(name, new_info));
+  } else {
+    pair->second.fuel= value;
+  }
+}
+
 
 void SailingDataView::update_remove(const std::string& name)
 {
@@ -188,9 +210,9 @@ void SailingDataView::draw()
   cout << "----- Sailing Data -----" << endl;
   cout << setw(WIDTH) << "Ship" << setw(WIDTH) << "Fuel" << setw(WIDTH) << "Course" << setw(WIDTH) << "Speed" << endl;
   for (auto it : objects) {
-    cout << setw(WIDTH) << it.first << setw(WIDTH) << it.second["fuel"] 
-        << setw(WIDTH) << it.second["course"] 
-        << setw(WIDTH) << it.second["speed"] << endl;
+    cout << setw(WIDTH) << it.first << setw(WIDTH) << it.second.fuel
+        << setw(WIDTH) << it.second.course
+        << setw(WIDTH) << it.second.speed << endl;
   }
 }
 
@@ -210,14 +232,25 @@ const std::string BridgeView::EMPTY = ". "; //for drawing
 const std::string BridgeView::WATER = "w-"; //for drawing
 
 BridgeView::BridgeView(std::string ownship_)
-  :PositionView(X_SIZE, DEFAULT_SCALE, PLOT_ORIGIN), 
-  ownship(ownship_)
+  :ownship(ownship_)
 {}
 
-void BridgeView::update_info(const std::string& name, const std::string& info_name, double info_value)
+// Save the supplied name and location for future use in a draw() call
+// If the name is already present,the new location replaces the previous one.
+void BridgeView::update_location(const std::string& name, Point location)
 {
-  if (name == ownship && info_name == "course") {
-    ownship_course = info_value;
+  auto pair = objects.find(name);
+  if (pair == objects.end()) {
+    objects.insert(std::pair<string, Point>(name, location));
+  } else {
+    pair->second = location;
+  }
+}
+
+void BridgeView::update_ship_course(const std::string& name, double value)
+{
+  if (name == ownship) {
+    ownship_course = value;
   }
 }
 
@@ -226,7 +259,7 @@ void BridgeView::update_remove(const std::string& name)
   if (name == ownship) {
     ownship_sunk_point = objects.find(ownship)->second;
   }
-  PositionView::update_remove(name);
+  objects.erase(name);
 }
 
 void BridgeView::draw()
@@ -281,4 +314,33 @@ void BridgeView::draw()
   cout << endl;
   //restore
   cout.precision(precision);
+}
+
+// Discard the saved information
+void BridgeView::clear()
+{
+  objects.clear();
+}
+
+// Calculate the cell subscripts corresponding to the supplied location parameter, 
+// using the current size, scale, and origin of the display. 
+// This function assumes that origin is a  member variable of type Point, 
+// scale is a double value, and size is an integer for the number of rows/columns 
+// currently being used for the grid.
+// Return true if the location is within the grid, false if not
+bool BridgeView::get_subscripts(int &ix, int &iy, Point location)
+{
+  // adjust with origin and scale
+  Cartesian_vector subscripts = (location - PLOT_ORIGIN) / DEFAULT_SCALE;
+  // truncate coordinates to integer after taking the floor
+  // floor function will produce integer smaller than even for negative values, 
+  // so - 0.05 => -1., which will be outside the array.
+  ix = int(floor(subscripts.delta_x));
+  iy = int(floor(subscripts.delta_y));
+  // if out of range, return false
+  if ((ix < 0) || (ix >= X_SIZE) || (iy < 0) || (iy >= Y_SIZE)) {
+    return false;
+    }
+  else
+    return true;
 }

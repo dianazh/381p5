@@ -31,12 +31,17 @@ class View {
 public:
   virtual ~View();
 
+  // update functions
+  // If the name is already present,the new info replaces the previous one.
   // update the object's location 
   virtual void update_location(const std::string& name, Point location);
-  // update the object's information 
-  // If the name is already present,the new info replaces the previous one.
-  virtual void update_info(const std::string& name, const std::string& info_name, double info_value);
-  
+  // update ship's speed
+  virtual void update_ship_speed(const std::string& name, double value);
+  // update ship's course 
+  virtual void update_ship_course(const std::string& name, double value);
+  // update ship's fuel
+  virtual void update_ship_fuel(const std::string& name, double value);
+
   // Remove the name and its location; no error if the name is not present.
   virtual void update_remove(const std::string& name);
   
