@@ -6,7 +6,7 @@ abstract base class, so concrete classes derived from Warship must be declared.
 
 #ifndef WARSHIP_H
 #define WARSHIP_H
-#include "Ship.h"
+#include "Ship.h" // NOTE: PROBABLY INCLUDE <MEMORY>
 
 class Warship : public Ship {
 public:
@@ -46,7 +46,7 @@ protected:
   std::shared_ptr<Ship> get_target() const;
 
 private:
-  enum class State {ATTACKING, NOT_ATTACKING};
+  enum class State {ATTACKING, NOT_ATTACKING}; //CAN DO WITH A BOOL. DECLARE BETTER IN .CPP FILE
 
   int firepower; //total firepower
   double maximum_range; //mamximum attacking range

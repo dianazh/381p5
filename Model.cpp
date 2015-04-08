@@ -45,7 +45,9 @@ Model::Model()
 // is name already in use for either ship or island?
 // either the identical name, or identical in first two characters counts as in-use
 bool Model::is_name_in_use(const string& name) const
-{
+{ 
+  //NOTE: CAN DEFINE MAPS COMPARATOR TO COMPARE FIRST TWO CHARS, 2 IS MAGIC NUMBER
+  //NOTE: USE SET? USE LOWERBOUND ON THE FIRST TWO CHAR OF NAME
   string starting_two = name.substr(0, 2); //should have no problem since Controller checked size() >= 2
   for (auto ptr : sim_objects) {
     if (!ptr.second->get_name().compare(0, 2, starting_two)) {

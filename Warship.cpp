@@ -17,7 +17,7 @@ Warship::Warship(const std::string& name_, Point position_, double fuel_capacity
 void Warship::update()
 {
   Ship::update();
-  if (warship_state == State::ATTACKING) {
+  if (warship_state == State::ATTACKING) { //NOTE: FLAT
     if (!is_afloat() || target.expired() || !target.lock()->is_afloat()) {
       stop_attack();
     } else {
@@ -30,7 +30,7 @@ void Warship::update()
 // or made attacking the wrong target
 void Warship::attack(shared_ptr<Ship> target_ptr_)
 {
-  if (!is_afloat()) 
+  if (!is_afloat()) //NOTE: FLAT
     throw Error("Cannot attack!");
   else {
     if (target_ptr_ == shared_from_this()) {
@@ -59,7 +59,7 @@ void Warship::stop_attack()
 void Warship::describe() const
 {
   Ship::describe();
-  if (warship_state == State::ATTACKING) {
+  if (warship_state == State::ATTACKING) { // NOTE: NESTED IF
     if (target.expired() || !target.lock()->is_afloat()) {
       cout << "Attacking absent ship" << endl;
     } else {

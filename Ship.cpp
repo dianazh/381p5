@@ -15,7 +15,7 @@ Ship::Ship(const std::string& name_, Point position_, double fuel_capacity_,
   maximum_speed(maximum_speed_), resistance(resistance_), ship_state(State::STOPPED),
   docked_Island(nullptr)
 {
-  track_base.set_position(position_);
+  track_base.set_position(position_); // NOTE: CAN INIT W/ CONSTUCTOR
 }
   
 // Return true if ship can move (it is not dead in the water or in the process or sinking);
@@ -47,7 +47,7 @@ bool Ship::is_afloat() const
 bool Ship::can_dock(shared_ptr<Island> island_ptr) const
 {
   return (ship_state == State::STOPPED && 
-    cartesian_distance(get_location(), island_ptr->get_location()) <= 0.1);
+    cartesian_distance(get_location(), island_ptr->get_location()) <= 0.1); //NOTE: CONST FOR 0.1
 }
 
 // Update the state of the Ship
@@ -120,7 +120,7 @@ void Ship::broadcast_current_state()
 }
 
 // Start moving to a destination position at a speed
-void Ship::set_destination_position_and_speed(Point destination_position, double speed)
+void Ship::set_destination_position_and_speed(Point destination_position, double speed) // NOTE: DUPLICATE W/ NEXT FUNC
 {
   if (can_move()) {
     if (speed <= maximum_speed) {
@@ -180,7 +180,7 @@ void Ship::stop()
 // dock at an Island - set our position = Island's position, go into Docked state
 void Ship::dock(shared_ptr<Island> island_ptr)
 {
-  if (can_dock(island_ptr)) {
+  if (can_dock(island_ptr)) { //NOTE: BETTER BE FLAT: HANDLE ERROR CASE IN THE INDENT
     track_base.set_position(island_ptr->get_location());
     ship_state = State::DOCKED;
     cout << get_name() << " docked at " << island_ptr-> get_name() << endl;
@@ -242,7 +242,7 @@ void Ship::receive_hit(int hit_force, shared_ptr<Ship> attacker_ptr)
     cout << get_name() << " sunk" << endl;
     ship_state = State::SUNK;
     track_base.set_speed(0.);
-    broadcast_current_state();
+    broadcast_current_state(); //NOTE: POSSIBILY NOT NECESSARY
     Model::get_Instance().notify_gone(get_name());
     Model::get_Instance().remove_ship(shared_from_this());
   }

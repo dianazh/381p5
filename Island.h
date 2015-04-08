@@ -34,15 +34,15 @@ public:
 
   // forbid  copy/move, construction/assignment
   Island(const Island&) = delete;
-  Island(const Island&&) = delete;
+  Island(const Island&&) = delete; //NOTE: REMOVE const
   Island& operator= (const Island&) = delete;
-  Island& operator= (const Island&&) = delete;
+  Island& operator= (const Island&&) = delete;//NOTE: REMOVE const
 
 private:
   Point position;        // Location of this island
   double fuel;    // amount of fuels initially for this island
   double production_rate;   // rate of fuel production for this island
 
-  static const int UNIT_TIME; //time unit
+  static const int UNIT_TIME; //time unit // NOTE: DON'T USE ALL CAPITALIZE FOR CONST VARS, QUESTION: NECESSARY?
 };
 #endif

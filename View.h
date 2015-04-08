@@ -24,7 +24,7 @@ using the new settings.
 
 #ifndef VIEW_H
 #define VIEW_H
-#include "Geometry.h"
+#include "Geometry.h" // NOTE: CAN DEAL WITH A FORWARD DECLARATION: STRUCT POINT;
 #include <string>
 
 class View {

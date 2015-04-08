@@ -25,7 +25,7 @@ using std::shared_ptr;
 void Controller::run()
 {
   // general commands for view and model
-  map<string, void(Controller::*)()> commands = {
+  map<string, void(Controller::*)()> commands = { //NOTE: CAN MAKE THESE TWO MEMBER VARIABLE
     {"status", &Controller::status}, 
     {"go", &Controller::go}, 
     {"create", &Controller::create}, 
@@ -80,11 +80,11 @@ void Controller::run()
       cout << e.what() << endl;
       if (cin.fail()) cin.clear();
       while (cin.get() != '\n');
-    } catch (std::exception& e2) {
+    } catch (std::exception& e2) { //NOTE: NO NEED TO HAVE A NEW NAME
       cout << e2.what() << endl;
       quit();
       return;
-    }
+    } // NOTE: CATCH(...)
   }
 }
 
@@ -105,7 +105,7 @@ void Controller::create()
 {
   string ship_name;
   cin >> ship_name;
-  if (ship_name.size() < 2) {
+  if (ship_name.size() < 2) { // NOTE: MAGIC NUMBER
     throw Error("Name is too short!");
   }
   if (Model::get_Instance().is_name_in_use(ship_name)) {
@@ -204,7 +204,7 @@ Point Controller::get_Point()
 {
   double x, y;
   cin >> x;
-  if (!cin) throw Error("Expected a double!");
+  if (!cin) throw Error("Expected a double!"); // NOTE: CAN USE !(CIN>>X>>Y) DIRECTLY
   cin >> y;
   if (!cin) throw Error("Expected a double!");
   return Point(x,y);
@@ -223,7 +223,7 @@ double Controller::get_speed()
 }
 
 // get input island from user
-shared_ptr<Island> Controller::get_island()
+shared_ptr<Island> Controller::get_island() //NOTE: POSSIBILY MEANINGLESS FUNCTION
 {
   string island_name;
   cin >> island_name;

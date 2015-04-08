@@ -17,7 +17,7 @@ Cruise_ship::Cruise_ship(const std::string& name_, Point position_)
   :Ship(name_, position_, FUEL_CAPACITY, MAX_SPEED, FUEL_CONSUMPTION, RESISTANCE), 
     cruise_destination(nullptr), cruise_state(State::NOT_CRUISING)
 {
-  all_islands =  Model::get_Instance().get_islands();
+  all_islands =  Model::get_Instance().get_islands(); //NOTE: CONSITER STORE UNVISITED ISLAND LIST: LOWER COMPLEXITY
 }
 
 // return true if status != not_cruising
@@ -84,7 +84,7 @@ void Cruise_ship::update()
         break;
       }
       case State::WAIT:
-      {
+      { //NOTE: NO NEED TO ADD {}
         cruise_state = State::SET_COURSE;
         break;
       }

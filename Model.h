@@ -24,7 +24,7 @@ class Ship;
 class View;
 
 // Declare the global model pointer
-class Model;
+class Model; //NOTE: DELETE
 
 class Model {
 public:
@@ -88,16 +88,17 @@ private:
   int time;    // the simulated time
   
   // ordered container for sim_objects
-  std::map<std::string, std::shared_ptr<Sim_object>> sim_objects;
+  std::map<std::string, std::shared_ptr<Sim_object>> sim_objects; //NOTE: USE SET RECOMMENDED
   // ordered container for islands 
   std::map<std::string, std::shared_ptr<Island>> islands;
   // ordered container for ships 
   std::map<std::string, std::shared_ptr<Ship>> ships;
   // container for views 
-  std::vector<std::shared_ptr<View>> views;
+  std::vector<std::shared_ptr<View>> views; // NOTE: CAN USE SET, QUICKER DELETE
 
   // private constructor 
   Model();
+  // NOTE: ~MODEL() SHOULD BE PRIVATE
 
   //helper
   // insert an island to its containers

@@ -41,7 +41,7 @@ void Cruiser::describe() const
 void Cruiser::receive_hit(int hit_force, std::shared_ptr<Ship> attacker_ptr)
 {
   Ship::receive_hit(hit_force, attacker_ptr);
-  if (!is_afloat()) {
+  if (!is_afloat()) { // NOTE: CAN SIMPLIZE THIS TWO IF
     return;
   }
   if (!is_attacking()) {

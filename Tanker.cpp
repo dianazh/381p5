@@ -18,7 +18,7 @@ Tanker::Tanker(const std::string& name_, Point position_)
   :Ship(name_, position_, FUEL_CAPACITY, MAX_SPEED, FUEL_CONSUMPTION, RESISTANCE),
   cargo(INIT_CARGO), cargo_capacity(CARGO_CAPACITY),
   tanker_state(State::NO_CARGO_DESTINATIONS),
-  load_destination(nullptr), unload_destination(nullptr)
+  load_destination(nullptr), unload_destination(nullptr) //NOTE: EXPLICIT INIT NOT NECESSARY
 {}
 
 // check if this Tanker has assigned cargo destinations, if yes, throw error
@@ -27,7 +27,7 @@ void Tanker::set_destination_position_and_speed(Point destination, double speed)
   if (tanker_state == State::NO_CARGO_DESTINATIONS) {
     Ship::set_destination_position_and_speed(destination, speed);
   } else {
-    throw Error("Tanker has cargo destinations!");
+    throw Error("Tanker has cargo destinations!"); //NOTE: BETTER DEFINE AS A CONST, BUT NO NEED TO DEFINE A FUNCTION
   }
 }
 
@@ -86,7 +86,7 @@ void Tanker::update()
 {
   Ship::update();
   if (!can_move()) {
-    tanker_stop();
+    tanker_stop(); //NOTE: USE TANKER::STOP() IS ENOUGH
   } else {
     switch (tanker_state) {
       case State::MOVING_TO_LOADING:
@@ -161,7 +161,7 @@ void Tanker::describe() const
 
 //see if both destinations for a cycle is set
 //if yes, start the cycle by finding the appropriate state
-void Tanker::start_cycle_if_appropriate()
+void Tanker::start_cycle_if_appropriate() // NOTE: NEED FLAT OUT, AVOID NESTED IF
 {
   if (unload_destination && load_destination) {
     if (is_docked()) {

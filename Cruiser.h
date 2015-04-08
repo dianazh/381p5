@@ -25,7 +25,7 @@ public:
 
 private:
   // default values
-  static const double FUEL_CAPACITY;
+  static const double FUEL_CAPACITY; //NO CAPITAL
   static const double MAX_SPEED;
   static const double FUEL_CONSUMPTION;
   static const int RESISTANCE;

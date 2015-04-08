@@ -9,7 +9,7 @@ class Cruise_ship : public Ship {
 public:
   Cruise_ship(const std::string& name_, Point position_);
   // return true if status != not_cruising
-  bool is_cruising() const;
+  bool is_cruising() const; //NOTE: CAN BE PRIVATE: YAGNI?
 
   // This class overrides these Ship functions so that it can check if this Cruiser_ship is on a cruise. If so, stop the cruise.
   // if the destination is an island, go to that island and start the cruise. Otherwise, work as normal ships do.
@@ -26,7 +26,7 @@ public:
 private:
   enum class State {NOT_CRUISING, TO_NEXT_STOP, REFUEL, WAIT, SET_COURSE};
   // default values
-  static const double FUEL_CAPACITY;
+  static const double FUEL_CAPACITY; // NOTE: NO CAPITAL
   static const double MAX_SPEED;
   static const double FUEL_CONSUMPTION;
   static const int RESISTANCE;
